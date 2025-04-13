@@ -34,6 +34,8 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'patientAuth'   => \App\Filters\PatientAuthFilter::class,
+        'doctorAuth'   => \App\Filters\DoctorAuthFilter::class
     ];
 
     /**

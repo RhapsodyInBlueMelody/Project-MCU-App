@@ -1,0 +1,17 @@
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <title>CodeIgniter Tutorial</title>
+</head>
+<body>
+    <nav>
+    <h1><?= esc($title) ?></h1>
+    <li>
+        <ul><a href="">Dashboard</a></ul>
+        <ul><a href=""><?= esc($username) ?></a></ul>
+    </li>
+    </nav>

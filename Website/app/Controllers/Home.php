@@ -6,6 +6,10 @@ class Home extends BaseController
 {
     public function index(): string
     {
-        return view('welcome_message');
+        $data['title'] = ucfirst("Home");
+        
+        return view('templates/home/header', $data)
+            . view('home')
+            . view('templates/home/footer');
     }
 }
