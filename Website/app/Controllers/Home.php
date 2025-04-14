@@ -6,7 +6,7 @@ class Home extends BaseController
 {
     public function index(): string
     {
-        $data['title'] = ucfirst("Home");
+        $data['title'] = ucfirst("Medical Check-Up App");
         
         return view('templates/home/header', $data)
             . view('home')

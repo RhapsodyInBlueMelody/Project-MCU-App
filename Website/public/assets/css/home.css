@@ -1,0 +1,237 @@
+/*
+--------------------------------------------------------------------------
+  Global Styles
+--------------------------------------------------------------------------
+*/
+
+body {
+  font-family: 'Merriweather', serif;
+}
+
+a {
+  text-decoration: none !important;
+  color: black !important;
+}
+
+/*
+--------------------------------------------------------------------------
+Welcome Banner Styles
+--------------------------------------------------------------------------
+*/
+
+#welcome-banner {
+  color: white !important;
+}
+
+#welcome-text {
+  color: white;
+}
+
+#realtime-clock {
+  font-size: 0.9rem;
+}
+
+/*
+--------------------------------------------------------------------------
+Language Switcher Styles
+--------------------------------------------------------------------------
+*/
+
+#language-switcher, #language-switcher-mobile, #language-switcher-nav {
+  display: flex;
+  align-items: center;
+}
+
+#language-switcher-mobile {
+  margin-left: auto;
+}
+
+#language-switcher-nav {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+#language-switcher-nav .flag-container {
+  margin-right: 10px;
+}
+
+#language-switcher-nav .form-check {
+  margin-left: 5px;
+}
+
+.flag-container {
+  width: 25px;
+  height: 17px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  background-size: cover;
+  background-position: center;
+}
+
+.form-check {
+  margin-left: 10px;
+}
+
+/*
+--------------------------------------------------------------------------
+Navigation Bar Styles
+--------------------------------------------------------------------------
+*/
+
+.navbar-nav .nav-item .nav-link {
+  display: block;
+}
+
+@media (min-width: 992px) {
+  .navbar-nav .nav-item .nav-link {
+      display: inline-block;
+  }
+}
+
+/*
+--------------------------------------------------------------------------
+Dropdown Styles with Animation
+--------------------------------------------------------------------------
+*/
+.navbar-nav .dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 200px; /* Adjust as needed */
+  padding: 0.5rem 0;
+  margin-top: 0;
+  font-size: 1rem;
+  color: #212529;
+  text-align: left;
+  list-style: none;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+  transform-origin: top center;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.navbar-nav .dropdown:hover .dropdown-menu {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.navbar-nav .dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 1.5rem;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+  text-decoration: none !important;
+}
+
+.navbar-nav .dropdown-item:hover,
+.navbar-nav .dropdown-item:focus {
+  color: #1e2125;
+  background-color: #f8f9fa;
+}
+
+.navbar-nav .dropdown-menu.show {
+  display: block; /* Ensure Bootstrap's show class overrides display: none */
+}
+
+/* Optional: Add a slight slide-in animation */
+.animated-dropdown {
+  animation: slideInDown 0.3s ease-out forwards;
+}
+
+@keyframes slideInDown {
+  from {
+      opacity: 0;
+      transform: translateY(-20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/*
+--------------------------------------------------------------------------
+Responsive Adjustments
+--------------------------------------------------------------------------
+*/
+@media (max-width: 991.98px) {
+  #realtime-clock {
+      display: none !important;
+  }
+
+  #language-switcher {
+      display: none !important;
+  }
+
+  .navbar-collapse {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background-color: rgba(248, 249, 250, 0.95);
+      z-index: 10;
+      padding: 15px;
+  }
+
+  .navbar-nav {
+      margin-bottom: 15px;
+  }
+
+  .navbar-nav .nav-item {
+      margin-bottom: 5px;
+  }
+
+  .navbar-nav .dropdown-menu {
+      position: static;
+      width: 100%;
+      box-shadow: none;
+      border: 0;
+      padding-left: 15px;
+      transform: none;
+      opacity: 1;
+  }
+
+  .d-flex {
+      flex-direction: column;
+      align-items: stretch;
+  }
+
+  .d-flex .btn {
+      margin-bottom: 5px;
+      width: 100%;
+  }
+
+  #language-switcher-nav {
+      display: flex;
+      margin-top: 10px;
+  }
+
+  #language-switcher-mobile {
+      display: none !important;
+  }
+}
+
+/*
+--------------------------------------------------------------------------
+Specific Element Overrides
+--------------------------------------------------------------------------
+*/
+
+#button-login-appointment {
+  color: black !important;
+}
