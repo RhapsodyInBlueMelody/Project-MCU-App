@@ -235,3 +235,179 @@ Specific Element Overrides
 #button-login-appointment {
   color: black !important;
 }
+
+/*
+--------------------------------------------------------------------------
+  Footer Styles
+--------------------------------------------------------------------------
+*/
+
+/* Base footer styles */
+.bg-light { /* Using Bootstrap's light background class */
+  background-color: #f8f9fa !important;
+}
+
+.py-4 { /* Using Bootstrap's padding-y class */
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+.mt-5 { /* Using Bootstrap's margin-top class */
+  margin-top: 3rem !important;
+}
+
+.container { /* Using Bootstrap's container for responsive width */
+  width: 100%;
+  padding-right: var(--bs-gutter-x, 0.75rem);
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* Styles for different sections within the footer */
+.footer-contact h5,
+.footer-location h5,
+.footer-social h5 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.footer-contact address {
+  margin-bottom: 1rem;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.footer-contact p {
+  margin-bottom: 0.5rem;
+}
+
+.footer-contact a {
+  color: inherit !important; /* Inherit text color */
+}
+
+.footer-location iframe {
+  width: 100%;
+  border: 1px solid #ccc;
+}
+
+.footer-social .list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+
+.footer-social li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-social a {
+  display: flex;
+  align-items: center;
+  color: inherit !important; /* Inherit text color */
+}
+
+.footer-social .bi { /* Targeting Bootstrap Icons */
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.footer-copyright {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6c757d; /* Muted text color */
+}
+
+.footer-divider {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-top: 1px solid #dee2e6; /* Light gray divider */
+}
+
+/*
+--------------------------------------------------------------------------
+  Responsive Footer Adjustments
+--------------------------------------------------------------------------
+*/
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  .container {
+    max-width: 540px;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .container {
+    max-width: 720px;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .container {
+    max-width: 960px;
+  }
+
+  .row > * { /* Target direct children of the row (columns) */
+    padding-right: calc(var(--bs-gutter-x) * .5);
+    padding-left: calc(var(--bs-gutter-x) * .5);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: calc(var(--bs-gutter-y) * -1);
+    margin-right: calc(var(--bs-gutter-x) * -.5);
+    margin-left: calc(var(--bs-gutter-x) * -.5);
+  }
+
+  .col-md-4 { /* Adjust column widths for medium and larger screens */
+    flex: 0 0 auto;
+    width: 33.33333333%;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* Extra extra large devices (larger desktops, 1400px and up) */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+}
+
+/*
+  Mobile Specific Adjustments (can be added for finer control)
+*/
+@media (max-width: 575.98px) {
+  .footer-contact,
+  .footer-location,
+  .footer-social {
+    margin-bottom: 1.5rem; /* Add more spacing between sections on small screens */
+    text-align: center; /* Center align text on small screens for better readability */
+  }
+
+  .footer-location iframe {
+    height: 250px; /* Adjust iframe height for smaller screens */
+  }
+
+  .footer-social ul {
+    text-align: center; /* Center social media links on small screens */
+  }
+
+  .footer-social li {
+    display: block; /* Make list items full width on small screens */
+  }
+
+  .footer-social a {
+    justify-content: center; /* Center the icon and text */
+  }
+}

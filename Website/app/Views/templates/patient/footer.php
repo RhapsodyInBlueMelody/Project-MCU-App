@@ -1,4 +1,6 @@
+</div>
+    </div>
 
-<em>&copy; TI.23.B1 2025</em>
+    <script src="<?= base_url('assets/js/patient.js?v=1.0')?>"></script>
 </body>
 </html>

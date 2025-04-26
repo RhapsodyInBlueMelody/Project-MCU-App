@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-use CodeIgniter\Controller;
+use CodeIgniter\Controller; 
 
 class FaceRecognition extends BaseController
 {

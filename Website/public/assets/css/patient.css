@@ -1,0 +1,7 @@
+/* Basic styling for the flag container */
+.flag-container {
+    width: 24px;
+    height: 16px;
+    background-size: cover;
+    margin-right: 0.5rem;
+}

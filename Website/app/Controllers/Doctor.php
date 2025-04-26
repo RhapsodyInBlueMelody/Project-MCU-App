@@ -1,15 +1,21 @@
 <?php
-
 namespace App\Controllers;
 
-class Doctor extends BaseController
+class Doctor extends AuthenticatedController
 {
-    public function index(): string
+    public function __construct()
     {
-        $data['title'] = ucfirst("Doctor Page"); // Capitalize the first letter
+        parent::__construct("doctor", "login/doctor");
+    }
 
-        return view('templates/doctor/header', $data)
-        . view('pages/home')
-        . view('templates/doctor/footer');
+    public function dashboard()
+    {
+        $data["title"] = "Doctor Dashboard";
+        $data["username"] = $this->session->get("username");
+        $data["doctor_name"] = $this->session->get("full_name");
+
+        return view("templates/doctor/header", $data) .
+            view("doctor/dashboard", $data) .
+            view("templates/doctor/footer");
     }
 }
