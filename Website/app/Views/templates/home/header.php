@@ -16,10 +16,28 @@
                     fontFamily: {
                         'merriweather': ['Merriweather', 'serif'],
                     },
+                    zIndex: {
+                        '100': '100',
+                    }
                 },
             },
         }
     </script>
+    <style>
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s;
+        }
+    </style>
 </head>
 <body class="font-merriweather">
 <div id="welcome-banner" class="flex items-center justify-between p-2 bg-info-500 text-white">
@@ -109,7 +127,7 @@
     </div>
 </nav>
 
-<nav class="bg-gray-100 py-2 px-5 hidden lg:flex">
+<nav class="bg-gray-100 py-2 px-5 hidden lg:flex relative">
     <div class="container mx-auto flex justify-between items-center">
         <a href="#" class="mr-8">
             <div class="border border-gray-300 w-32 h-10 flex justify-center items-center text-gray-600 text-xs">
@@ -120,41 +138,39 @@
             <li>
                 <a href="#" class="nav-link active text-blue-500">Beranda</a>
             </li>
-            <li class="relative" x-data="{ openDropdownRumahSakit: false }">
-                <a href="#" class="nav-link hover:text-blue-500" @mouseover="openDropdownRumahSakit = true" @mouseleave="openDropdownRumahSakit = false">
+            <li class="relative" x-data="{ open: false }">
+                <a href="#"
+                   class="nav-link hover:text-blue-500"
+                   @mouseover="open = true"
+                   @mouseleave="open = false">
                     Rumah Sakit Kami
                 </a>
-                <ul class="absolute top-full left-0 bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] transition-all origin-top scale-y-0"
-                    x-show="openDropdownRumahSakit"
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 transform scale-y-50"
-                    x-transition:enter-end="opacity-100 transform scale-y-100"
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100 transform scale-y-100"
-                    x-transition:leave-end="opacity-0 transform scale-y-50"
-                    @mouseover="openDropdownRumahSakit = true"
-                    @mouseleave="openDropdownRumahSakit = false">
-                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
-                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
-                </ul>
+                <div class="absolute top-full left-0 z-50"
+                     @mouseover="open = true"
+                     @mouseleave="open = false">
+                    <ul class="bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] dropdown-menu"
+                        :class="{'show': open}">
+                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
+                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
+                    </ul>
+                </div>
             </li>
-            <li class="relative" x-data="{ openDropdownFasilitas: false }">
-                <a href="#" class="nav-link hover:text-blue-500" @mouseover="openDropdownFasilitas = true" @mouseleave="openDropdownFasilitas = false">
+            <li class="relative" x-data="{ open: false }">
+                <a href="#"
+                   class="nav-link hover:text-blue-500"
+                   @mouseover="open = true"
+                   @mouseleave="open = false">
                     Fasilitas Kami
                 </a>
-                <ul class="absolute top-full left-0 bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] transition-all origin-top scale-y-0"
-                    x-show="openDropdownFasilitas"
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 transform scale-y-50"
-                    x-transition:enter-end="opacity-100 transform scale-y-100"
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100 transform scale-y-100"
-                    x-transition:leave-end="opacity-0 transform scale-y-50"
-                    @mouseover="openDropdownFasilitas = true"
-                    @mouseleave="openDropdownFasilitas = false">
-                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
-                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
-                </ul>
+                <div class="absolute top-full left-0 z-50"
+                     @mouseover="open = true"
+                     @mouseleave="open = false">
+                    <ul class="bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] dropdown-menu"
+                        :class="{'show': open}">
+                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
+                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
+                    </ul>
+                </div>
             </li>
             <li>
                 <a href="#" class="nav-link hover:text-blue-500">Cari Dokter</a>
