@@ -3,12 +3,12 @@ namespace App\Controllers;
 
 use App\Models\PatientProfileModel;
 
-class Patient extends AuthenticatedController
+class Patient extends BaseController
 {
-    public function __construct()
-    {
-        parent::__construct("patient", "login/patient", ["register"]);
-    }
+    //public function __construct()
+    //{
+    //    parent::__construct("patient", "login/patient", ["register"]);
+    //}
 
     public function register()
     {
@@ -38,10 +38,10 @@ class Patient extends AuthenticatedController
     public function dashboard()
     {
         $data["title"] = "Patient Dashboard";
-        //$data["username"] = "user";
-        //$data["patient_name"] = "dummy";
-        $data["username"] = $this->session->get("username");
-        $data["patient_name"] = $this->session->get("full_name");
+        $data["username"] = "user";
+        $data["patient_name"] = "dummy";
+        //$data["username"] = $this->session->get("username");
+        //$data["patient_name"] = $this->session->get("full_name");
 
         return view("templates/patient/header", $data) .
             view("patient/dashboard", $data) .

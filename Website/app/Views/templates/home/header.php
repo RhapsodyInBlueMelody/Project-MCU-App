@@ -51,85 +51,131 @@
         </div>
     </div>
 </div>
-<nav class="bg-gray-100 py-2 px-5">
+<nav class="bg-gray-100 py-2 px-5 lg:hidden">
     <div class="container mx-auto flex justify-between items-center">
         <a href="#" class="mr-8">
             <div class="border border-gray-300 w-32 h-10 flex justify-center items-center text-gray-600 text-xs">
                 Image Placeholder
             </div>
         </a>
-        <button class="md:hidden focus:outline-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"
-                x-data="{ open: false }"
-                @click="open = !open">
+        <button id="toggleMobileMenu" class="focus:outline-none">
             <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
             </svg>
         </button>
-        <div class="hidden md:flex flex-grow justify-between items-center" id="navbarNav"
-             x-data="{ open: false }"
-             :class="{'hidden': !open, 'flex': open}"
-             @click.away="open = false">
-            <ul class="flex space-x-4 mr-auto">
-                <li>
-                    <a href="#" class="nav-link active text-blue-500">Beranda</a>
-                </li>
-                <li class="relative" x-data="{ openDropdownRumahSakit: false }">
-                    <a href="#" class="nav-link hover:text-blue-500" @mouseover="openDropdownRumahSakit = true" @mouseleave="openDropdownRumahSakit = false">
-                        Rumah Sakit Kami
-                    </a>
-                    <ul class="absolute top-full left-0 bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] transition-all origin-top scale-y-0"
-                        x-show="openDropdownRumahSakit"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform scale-y-50"
-                        x-transition:enter-end="opacity-100 transform scale-y-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform scale-y-100"
-                        x-transition:leave-end="opacity-0 transform scale-y-50"
-                        @mouseover="openDropdownRumahSakit = true"
-                        @mouseleave="openDropdownRumahSakit = false">
-                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
-                    </ul>
-                </li>
-                <li class="relative" x-data="{ openDropdownFasilitas: false }">
-                    <a href="#" class="nav-link hover:text-blue-500" @mouseover="openDropdownFasilitas = true" @mouseleave="openDropdownFasilitas = false">
-                        Fasilitas Kami
-                    </a>
-                    <ul class="absolute top-full left-0 bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] transition-all origin-top scale-y-0"
-                        x-show="openDropdownFasilitas"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 transform scale-y-50"
-                        x-transition:enter-end="opacity-100 transform scale-y-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 transform scale-y-100"
-                        x-transition:leave-end="opacity-0 transform scale-y-50"
-                        @mouseover="openDropdownFasilitas = true"
-                        @mouseleave="openDropdownFasilitas = false">
-                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#" class="nav-link hover:text-blue-500">Cari Dokter</a>
-                </li>
-                <li class="md:hidden mt-2">
-                    <div class="flex items-center">
-                        <div id="flag-display-nav" class="w-6 h-4 mr-2 border border-gray-300 bg-cover bg-center" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Flag_of_Indonesia.svg/255px-Flag_of_Indonesia.svg.png');"></div>
-                        <div class="inline-flex items-center mr-2">
-                            <input type="radio" name="language-nav" id="en-nav" value="en" class="form-radio">
-                            <label for="en-nav" class="ml-1 text-sm">EN</label>
-                        </div>
-                        <div class="inline-flex items-center">
-                            <input type="radio" name="language-nav" id="id-nav" value="id" checked class="form-radio">
-                            <label for="id-nav" class="ml-1 text-sm">ID</label>
-                        </div>
+    </div>
+    <div id="mobileMenu" class="hidden bg-gray-100 shadow-md mt-2 rounded-md overflow-hidden">
+        <ul class="space-y-2 p-4">
+            <li>
+                <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
+                    Beranda
+                </a>
+            </li>
+            <li>
+                <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
+                    Rumah Sakit Kami
+                </a>
+            </li>
+            <li>
+                <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
+                    Fasilitas Kami
+                </a>
+            </li>
+            <li>
+                <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
+                    Cari Dokter
+                </a>
+            </li>
+            <li class="mt-4 border-t border-gray-200 pt-2">
+                <div class="flex items-center space-x-2">
+                    <div id="flag-display-nav-mobile" class="w-6 h-4 mr-2 border border-gray-300 bg-cover bg-center" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Flag_of_Indonesia.svg/255px-Flag_of_Indonesia.svg.png');"></div>
+                    <div class="inline-flex items-center mr-2">
+                        <input type="radio" name="language-nav-mobile" id="en-nav-mobile" value="en" class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                        <label class="ml-1 text-sm text-gray-700" for="en-nav-mobile">EN</label>
                     </div>
-                </li>
-            </ul>
-            <div class="flex">
-                <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-1 px-3 border border-blue-500 hover:border-transparent rounded-full text-sm mr-2" type="button">Buat Janji Temu</button>
-                <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-1 px-3 border border-green-500 hover:border-transparent rounded-full text-sm" type="button">Daftar/Masuk</button>
+                    <div class="inline-flex items-center">
+                        <input type="radio" name="language-nav-mobile" id="id-nav-mobile" value="id" checked class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                        <label class="ml-1 text-sm text-gray-700" for="id-nav-mobile">ID</label>
+                    </div>
+                </div>
+            </li>
+            <li class="mt-4">
+                <div class="flex flex-col space-y-2 items-stretch">
+                    <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded-full text-sm" type="button">Buat Janji Temu</button>
+                    <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded-full text-sm" type="button">Daftar/Masuk</button>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<nav class="bg-gray-100 py-2 px-5 hidden lg:flex">
+    <div class="container mx-auto flex justify-between items-center">
+        <a href="#" class="mr-8">
+            <div class="border border-gray-300 w-32 h-10 flex justify-center items-center text-gray-600 text-xs">
+                Image Placeholder
             </div>
+        </a>
+        <ul class="flex space-x-4 mr-auto">
+            <li>
+                <a href="#" class="nav-link active text-blue-500">Beranda</a>
+            </li>
+            <li class="relative" x-data="{ openDropdownRumahSakit: false }">
+                <a href="#" class="nav-link hover:text-blue-500" @mouseover="openDropdownRumahSakit = true" @mouseleave="openDropdownRumahSakit = false">
+                    Rumah Sakit Kami
+                </a>
+                <ul class="absolute top-full left-0 bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] transition-all origin-top scale-y-0"
+                    x-show="openDropdownRumahSakit"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform scale-y-50"
+                    x-transition:enter-end="opacity-100 transform scale-y-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform scale-y-100"
+                    x-transition:leave-end="opacity-0 transform scale-y-50"
+                    @mouseover="openDropdownRumahSakit = true"
+                    @mouseleave="openDropdownRumahSakit = false">
+                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
+                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
+                </ul>
+            </li>
+            <li class="relative" x-data="{ openDropdownFasilitas: false }">
+                <a href="#" class="nav-link hover:text-blue-500" @mouseover="openDropdownFasilitas = true" @mouseleave="openDropdownFasilitas = false">
+                    Fasilitas Kami
+                </a>
+                <ul class="absolute top-full left-0 bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] transition-all origin-top scale-y-0"
+                    x-show="openDropdownFasilitas"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform scale-y-50"
+                    x-transition:enter-end="opacity-100 transform scale-y-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform scale-y-100"
+                    x-transition:leave-end="opacity-0 transform scale-y-50"
+                    @mouseover="openDropdownFasilitas = true"
+                    @mouseleave="openDropdownFasilitas = false">
+                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 1</a></li>
+                    <li><a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sub Menu 2</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="nav-link hover:text-blue-500">Cari Dokter</a>
+            </li>
+        </ul>
+        <div class="flex">
+            <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-1 px-3 border border-blue-500 hover:border-transparent rounded-full text-sm mr-2" type="button">Buat Janji Temu</button>
+            <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-1 px-3 border border-green-500 hover:border-transparent rounded-full text-sm" type="button">Daftar/Masuk</button>
         </div>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleMobileMenu = document.getElementById('toggleMobileMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        if (toggleMobileMenu && mobileMenu) {
+            toggleMobileMenu.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    });
+</script>
