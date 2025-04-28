@@ -1,9 +1,9 @@
 <div x-data="{
     currentIndex: 0,
     desktopImages: [
-        'https://media.istockphoto.com/id/1159883458/vector/medical-insurance-template-hospital.jpg?s=612x612&w=0&k=20&c=EdgxXlcCy6IQRLJk6fTvA1Aa-NE1J97mCxm3lVI_W5s=',
-        'https://media.istockphoto.com/id/1298883368/photo/modern-hospital-isolation-rooms.jpg?s=612x612&w=0&k=20&c=4dbZdrRS87cgnIBVe8yii5_1F-NcKtiLTcQDPE-yiLM=',
-        'https://media.istockphoto.com/id/1295775470/photo/hospital-corridor.jpg?s=612x612&w=0&k=20&c=EzhDKzSGsvzAkKcpraz92HSl776Ub2yAVe6kM08LTj4='
+        'https://placehold.co/1920x512/333/fff?text=Desktop+Slide+1',
+        'https://placehold.co/1920x512/007bff/fff?text=Desktop+Slide+2',
+        'https://placehold.co/1920x512/28a745/fff?text=Desktop+Slide+3'
     ],
     mobileImages: [
         'https://placehold.co/640x360/333/fff?text=Mobile+Slide+1',
@@ -57,28 +57,7 @@
             </template>
         </div>
     </div>
-    <!-- Bagian Judul, Keterangan, dan Tombol Hubungi Kami (dengan WhatsApp Bot) -->
-    <div class="text-center mt-8 px-4">
-        <div class="bg-gray-100 py-8 px-6 rounded-lg max-w-3xl mx-auto shadow-md">
-            <h1 class="text-3xl font-bold text-black-800">RSUD Persahabatan</h1>
-            <p class="mt-4 text-gray-700">
-                RSUD Persahabatan adalah rumah sakit rujukan nasional untuk layanan paru dan pernapasan,
-                dengan komitmen memberikan layanan kesehatan terbaik di Jakarta Timur.
-            </p>
-            <a href="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer">
-                <button class="mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg transition duration-300 flex items-center justify-center space-x-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="text-white">
-                        <path fill-rule="evenodd" d="M4.876 9.69A5.986 5.986 0 0112 8a5.986 5.986 0 017.124 6.622A6.027 6.027 0 0112 16a5.976 5.976 0 01-6.624-5.374A3.35 3.35 0 004 12a3.346 3.346 0 001.255-2.31z" clip-rule="evenodd" />
-                    </svg>
-                    <span>Hubungi Kami via WhatsApp</span>
-                </button>
-            </a>
 
-        </div>
-    </div>
-
-
-
-</div>
-
+    <h1 class="text-2xl font-bold mt-4">RSUD Persahabatan</h1>
+    <p></p>
 </div>

@@ -28,9 +28,5 @@
                 </div>
             </div>
             <div>
-                <h5 class="font-semibold text-lg mb-2">Ikuti Kami</h5>
-                <ul class="list-none p-0">
-                    <li class="mb-1"><a href="#" class="flex items-center hover:underline"><svg class="w-4 h-4 mr-2 fill-current" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 1.323.06 2.707.183 3."></path>
-                    </footer>
-                    </body>
-                    </html>
+
+                </html>
