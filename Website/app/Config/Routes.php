@@ -1,12 +1,24 @@
 <?php
+
 use CodeIgniter\Router\RouteCollection;
 use App\Controllers\DicomProcessor;
 use App\Controllers\FaceRecognition;
+use App\Controllers\Home;
 
 /**
  * @var RouteCollection $routes
  */
+
+
 $routes->get("/", "Home::index");
+
+$routes->group("rumah-sakit", function ($routes) {
+    $routes->get("cabang-jakarta", "Home::cabangJakarta"); // untuk halaman Cabang Jakarta
+    $routes->get("cabang-bandung", "Home::cabangBandung"); // untuk halaman Cabang Bandung
+    $routes->get("cabang-surabaya", "Home::cabangSurabaya"); // untuk halaman Cabang Surabaya
+    $routes->get("fasilitas-kami", "Home::fasilitasKami"); // Dipindah ke sini
+    $routes->get("cari-dokter", "Home::cariDokter"); // Dipindah ke sini
+});
 
 $routes->group("auth", function ($routes) {
     $routes->get("login", "Auth::login");
@@ -52,4 +64,3 @@ $routes->post("/face_upload/upload", [FaceRecognition::class, "upload"]);
 // Handle file upload
 $routes->get("/dicom-processor", [DicomProcessor::class, "uploadForm"]);
 $routes->post("/dicom-processor/upload", [DicomProcessor::class, "upload"]);
-?>
