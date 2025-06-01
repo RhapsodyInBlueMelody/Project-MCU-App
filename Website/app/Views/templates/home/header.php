@@ -52,7 +52,7 @@
         <div class="container mx-auto flex justify-between items-center">
             <a href="#" class="mr-8">
                 <div class="border border-gray-300 w-32 h-10 flex justify-center items-center text-gray-600 text-xs">
-                    Logo Placeholder
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSvsyzURp7vnROIBKK1PNPJpvNbOb8JNXWvQ&s" alt="Logo" class="w-full h-full object-contain">
                 </div>
             </a>
             <button id="toggleMobileMenu" class="focus:outline-none">
@@ -67,23 +67,15 @@
                 <li><a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">Rumah Sakit Kami</a></li>
                 <li><a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">Fasilitas Kami</a></li>
                 <li><a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">Cari Dokter</a></li>
-                <li class="mt-4 border-t border-gray-200 pt-2">
-                    <div class="flex items-center space-x-2">
-                        <input type="radio" name="language-nav-mobile" id="en-nav-mobile" value="en" class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                        <label for="en-nav-mobile" class="text-sm text-gray-700">EN</label>
-                        <input type="radio" name="language-nav-mobile" id="id-nav-mobile" value="id" checked class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                        <label for="id-nav-mobile" class="text-sm text-gray-700">ID</label>
-                    </div>
-                </li>
-                <li class="mt-4">
-                    <div class="flex flex-col space-y-2 items-stretch">
-                        <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded-full text-sm">Buat Janji Temu</button>
-                        <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded-full text-sm">Daftar/Masuk</button>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </nav>
+            <li class="mt-4">
+                <div class="flex flex-col space-y-2 items-stretch">
+                    <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded-full text-sm" type="button">Buat Janji Temu</button>
+                    <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded-full text-sm" type="button">Daftar/Masuk</button>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
 
     <!-- Navigation Bar (Desktop) -->
     <nav class="bg-purple-100 py-2 px-5 hidden lg:flex relative">
@@ -97,7 +89,7 @@
             <ul class="flex space-x-4 mr-auto">
                 <li><a href="/" class="nav-link active text-blue-500">Beranda</a></li>
                 <li class="relative" x-data="{ open: false }">
-                    <a href="#" class="nav-link hover:text-blue-500" @mouseover="open = true" @mouseleave="open = false">Rumah Sakit Kami</a>
+                    <a class="cursor-default nav-link hover:text-blue-500" @mouseover="open = true" @mouseleave="open = false">Rumah Sakit Kami</a>
                     <div class="absolute top-full left-0 z-50" @mouseover="open = true" @mouseleave="open = false">
                         <ul class="bg-white shadow-md rounded-md mt-1 py-2 min-w-[10rem] dropdown-menu" :class="{'show': open}">
                             <li><a href="/rumah-sakit/cabang-jakarta" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">RS Cabang Jakarta</a></li>
@@ -113,6 +105,8 @@
             <div class="flex space-x-4">
                 <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-1 px-3 border border-blue-500 hover:border-transparent rounded-full text-sm">Buat Janji Temu</button>
                 <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-1 px-3 border border-green-500 hover:border-transparent rounded-full text-sm">Daftar/Masuk</button>
+                <button id="checkout-button">Checkout Now</button>
+
             </div>
         </div>
     </nav>

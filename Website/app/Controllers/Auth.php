@@ -111,7 +111,7 @@ class Auth extends BaseController
         if (session()->get("isLoggedIn")) {
             return redirect()->to("/dashboard");
         }
-        return view("auth/login");
+        return view("auth/login/patient");
     }
 
     public function authenticate()
@@ -157,11 +157,6 @@ class Auth extends BaseController
     public function doctorRegister()
     {
         return view("auth/doctor_register");
-    }
-
-    public function register()
-    {
-        return view("auth/register");
     }
 
     public function save()

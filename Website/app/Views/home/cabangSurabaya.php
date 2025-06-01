@@ -1,13 +1,3 @@
-<!DOCTYPE html>
-<html lang="id">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RS Cabang Surabaya</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-
 <body class="bg-gray-50 text-gray-800">
 
     <!-- Header -->
@@ -74,9 +64,9 @@
             <p><strong>Telepon:</strong> (031) 765-4321</p>
             <p><strong>Email:</strong> info@rscabangsby.co.id</p>
         </section>
-    </main>
+    
     <!-- Lokasi -->
-    <section class="mb-10">
+    <div class="mt-8">
         <h3 class="text-xl font-bold mb-4">Lokasi Kami</h3>
         <div class="w-full h-64 rounded-lg overflow-hidden shadow-lg">
             <iframe
@@ -88,8 +78,6 @@
                 loading="lazy">
             </iframe>
         </div>
-    </section>
+    </div>
 
-</body>
-
-</html>
+    </main>

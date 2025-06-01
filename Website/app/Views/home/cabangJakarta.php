@@ -1,13 +1,3 @@
-<!DOCTYPE html>
-<html lang="id">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RS Cabang Jakarta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-
 <body class="bg-gray-50 text-gray-800">
 
     <!-- Header -->
@@ -73,7 +63,7 @@
         </section>
 
         <!-- Lokasi -->
-        <section>
+        <div class="mt-8">
             <h3 class="text-xl font-bold mb-4">Lokasi Kami</h3>
             <div class="w-full h-64 rounded-lg overflow-hidden shadow-lg">
                 <iframe
@@ -85,6 +75,5 @@
                     loading="lazy">
                 </iframe>
             </div>
-        </section>
-
-</html>
+        </div>
+    </main>

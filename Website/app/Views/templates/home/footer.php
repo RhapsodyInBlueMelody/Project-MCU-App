@@ -1,4 +1,4 @@
-<footer class="bg-gray-100 py-4 mt-5">
+<footer class="bg-slate-500 py-4 mt-5 text-sky-50 p-5">
     <div class="container mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -10,12 +10,12 @@
                     Kota Jakarta Timur,<br>
                     Daerah Khusus Ibukota Jakarta 13230
                 </address>
-                <p><strong class="font-semibold">Email:</strong> <a href="mailto:info@example.com" class="text-black hover:underline">info@example.com</a> (Placeholder)</p>
-                <p><strong class="font-semibold">Telepon:</strong> <a href="tel:+621234567890" class="text-black hover:underline">+62 123 456 7890</a> (Placeholder)</p>
+                <p><strong class="decoration-sky-50">Email:</strong> <a href="mailto:info@example.com" class="text-black hover:underline">info@example.com</a> (Placeholder)</p>
+                <p><strong class="decoration-sky-50">Telepon:</strong> <a href="tel:+621234567890" class="text-black hover:underline">+62 123 456 7890</a> (Placeholder)</p>
             </div>
             <div>
                 <h5 class="font-semibold text-lg mb-2">Lokasi Kami</h5>
-                <div class="max-w-full overflow-hidden border border-gray-300">
+                <div class="max-w-full overflow-hidden border border-gray-300 rounded-[2vw]">
                     <iframe
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.649987488838!2d106.87758897509767!3d-6.18997899381998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f5d2e764b12d%3A0x72b278c8415c3c1c!2sRSUP%20Persahabatan!5e0!3m2!1sid!2sid!4v1713125146878!5m2!1sid!2sid"
                         width="100%"
