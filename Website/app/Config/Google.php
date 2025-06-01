@@ -11,21 +11,21 @@ class Google extends BaseConfig
      *
      * @var string
      */
-    public string $clientId = "835532383930-4g8p3qoo8sos4o0i4mktfnn8lt1evssc.apps.googleusercontent.com";
+    public string $clientId = '';
 
     /**
      * Google OAuth Client Secret
      *
      * @var string
      */
-    public string $clientSecret = "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";
+    public string $clientSecret = '';
 
     /**
      * Default redirect URI
      *
      * @var string
      */
-    public string $redirectUri = "http://localhost:8080/index.php/auth/google/callback";
+    public string $redirectUri = '';
 
     /**
      * Requested OAuth scopes
@@ -41,16 +41,8 @@ class Google extends BaseConfig
     {
         parent::__construct();
 
-        // For security, load these from environment variables in production
-        if (getenv("GOOGLE_CLIENT_ID")) {
-            $this->clientId = getenv("GOOGLE_CLIENT_ID");
-        }
-
-        if (getenv("GOOGLE_CLIENT_SECRET")) {
-            $this->clientSecret = getenv("GOOGLE_CLIENT_SECRET");
-        }
-
-        // Set dynamic redirect URI based on current environment
+        $this->clientId = getenv("GOOGLE_CLIENT_ID") ?: '';
+        $this->clientSecret = getenv("GOOGLE_CLIENT_SECRET") ?: '';
         $this->redirectUri = site_url("auth/google/callback");
     }
 }
