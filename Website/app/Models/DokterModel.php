@@ -4,14 +4,14 @@ use CodeIgniter\Model;
 
 class DokterModel extends Model
 {
-    protected $table = "Dokter";
-    protected $primaryKey = "ID_DOKTER";
+    protected $table = "dokter";
+    protected $primaryKey = "id_dokter";
     protected $allowedFields = [
         "user_id",
-        "NAMA_DOKTER",
+        "nama_dokter",
         "id_spesialisasi",
-        "NO_LISENSI",
-        "NO_TELP_DOKTER",
+        "no_lisensi",
+        "telepon_dokter",
         "is_verified",
         "verification_status",
         "verification_date",
@@ -21,19 +21,38 @@ class DokterModel extends Model
     protected $createdField = "created_at";
     protected $updatedField = "updated_at";
 
-    public function getDoctorsBySpesialisasiId($spesialisasiId)
+    public function getVerifiedDoctorProfile($userId)
+    {
+        $doctor = $this->where("user_id", $userId)->first();
+
+        if (!$doctor) {
+            return ["error" => "Doctor not found"];
+        }
+
+        if ($doctor["is_verified"] != 1 || $doctor["verification_status"] != "approved") {
+            if ($doctor["verification_status"] == "rejected") {
+                return ["error" => "Doctor verification is still pending"];
+        }
+            return ["error" => "Doctor is not verified"];
+        }
+
+        return $doctor;
+        
+    }
+
+    public function getDoctorsByspesialisasiId($spesialisasiId)
     {
         return $this->where("id_spesialisasi", $spesialisasiId)->findAll();
     }
 
-    public function getAllDoctorsWithSpesialisasi()
+    public function getAllDoctorsWithspesialisasi()
     {
         $result = $this->db
-            ->table("Dokter")
-            ->select("Dokter.*, Spesialisasi.nama_spesialisasi")
+            ->table("dokter")
+            ->select("dokter.*, spesialisasi.nama_spesialisasi")
             ->join(
-                "Spesialisasi",
-                "Dokter.id_spesialisasi = Spesialisasi.id_spesialisasi",
+                "spesialisasi",
+                "dokter.id_spesialisasi = spesialisasi.id_spesialisasi",
                 "left"
             )
             ->get()
@@ -42,17 +61,17 @@ class DokterModel extends Model
         return $result;
     }
 
-    public function findDoctorByIdWithSpesialisasi($doctorId)
+    public function findDoctorByIdWithspesialisasi($doctorId)
     {
         return $this->db
-            ->table("Dokter")
-            ->select("Dokter.*, Spesialisasi.nama_spesialisasi")
+            ->table("dokter")
+            ->select("dokter.*, spesialisasi.nama_spesialisasi")
             ->join(
-                "Spesialisasi",
-                "Dokter.id_spesialisasi = Spesialisasi.id_spesialisasi",
+                "spesialisasi",
+                "dokter.id_spesialisasi = spesialisasi.id_spesialisasi",
                 "left"
             )
-            ->where("ID_DOKTER", $doctorId)
+            ->where("id_dokter", $doctorId)
             ->get()
             ->getRowArray();
     }

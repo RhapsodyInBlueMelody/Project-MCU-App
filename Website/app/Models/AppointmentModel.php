@@ -4,16 +4,16 @@ use CodeIgniter\Model;
 
 class AppointmentModel extends Model
 {
-    protected $table = "Janji_Temu";
-    protected $primaryKey = "ID_JANJI_TEMU";
+    protected $table = "janji_temu";
+    protected $primaryKey = "id_janji_temu";
     protected $allowedFields = [
-        "NAMA_JANJI",
-        "ID_PASIEN",
-        "TANGGAL_JANJI",
-        "WAKTU_JANJI",
-        "ID_DOKTER",
-        "ID_PAKET",
-        "STATUS",
+        "nama_janji",
+        "id_pasien",
+        "tanggal_janji",
+        "waktu_janji",
+        "id_dokter",
+        "id_paket",
+        "status",
         "created_by",
         "created_at",
         "updated_by",
@@ -26,21 +26,21 @@ class AppointmentModel extends Model
     /**
      * Get all appointments for a specific patient
      */
-    public function getPatientAppointments($patientId)
+    public function getPasienAppointments($pasienId)
     {
         return $this->db
-            ->table("Janji_Temu a")
-            ->select("a.*, d.NAMA_DOKTER, s.nama_spesialisasi, p.nama_paket")
-            ->join("Dokter d", "d.ID_DOKTER = a.ID_DOKTER", "left")
+            ->table("janji_temu a")
+            ->select("a.*, d.nama_dokter, s.nama_spesialisasi, p.nama_paket")
+            ->join("dokter d", "d.id_dokter = a.id_dokter", "left")
             ->join(
-                "Spesialisasi s",
+                "spesialisasi s",
                 "s.id_spesialisasi = d.id_spesialisasi",
                 "left"
             )
-            ->join("Paket p", "p.id_paket = a.ID_PAKET", "left")
-            ->where("a.ID_PASIEN", $patientId)
-            ->orderBy("a.TANGGAL_JANJI", "DESC")
-            ->orderBy("a.WAKTU_JANJI", "DESC")
+            ->join("paket p", "p.id_paket = a.id_paket", "left")
+            ->where("a.id_pasien", $pasienId)
+            ->orderBy("a.tanggal_janji", "DESC")
+            ->orderBy("a.waktu_janji", "DESC")
             ->get()
             ->getResultArray();
     }
@@ -51,18 +51,18 @@ class AppointmentModel extends Model
     public function getUpcomingAppointments($patientId, $limit = null)
     {
         $query = $this->db
-            ->table("Janji_Temu a")
-            ->select("a.*, d.NAMA_DOKTER, s.nama_spesialisasi, p.nama_paket")
-            ->join("Dokter d", "d.ID_DOKTER = a.ID_DOKTER", "left")
+            ->table("janji_temu a")
+            ->select("a.*, d.nama_dokter, s.nama_spesialisasi, p.nama_paket")
+            ->join("dokter d", "d.id_dokter = a.id_dokter", "left")
             ->join(
-                "Spesialisasi s",
+                "spesialisasi s",
                 "s.id_spesialisasi = d.id_spesialisasi",
                 "left"
             )
-            ->join("Paket p", "p.id_paket = a.ID_PAKET", "left")
-            ->where("a.ID_PASIEN", $patientId)
-            ->where("a.STATUS", "pending")
-            ->orWhere("a.STATUS", "confirmed")
+            ->join("paket p", "p.id_paket = a.id_paket", "left")
+            ->where("a.id_pasien", $patientId)
+            ->where("a.status", "pending")
+            ->orWhere("a.status", "confirmed")
             ->where("a.TANGGAL_JANJI >=", date("Y-m-d"))
             ->orderBy("a.TANGGAL_JANJI", "ASC")
             ->orderBy("a.WAKTU_JANJI", "ASC");
@@ -80,24 +80,24 @@ class AppointmentModel extends Model
     public function getAppointmentDetails($id)
     {
         $builder = $this->db
-            ->table("Janji_Temu a")
+            ->table("janji_temu a")
             ->select(
                 'a.*,
-                       p.NAMA_PAKET, p.Harga_Paket, p.deskripsi_singkat as DESKRIPSI_PAKET,
-                       d.NAMA_DOKTER,
-                       s.NAMA_SPESIALISASI,
-                       diag.DIAGNOSIS, diag.REKOMENDASI, diag.TANGGAL_DIAGNOSIS,
+                       p.nama_paket, p.harga, p.deskripsi as DESKRIPSI_PAKET,
+                       d.nama_dokter,
+                       s.nama_spesialisasi,
+                       diag.diagnosis, diag.REKOMENDASI, diag.TANGGAL_DIAGNOSIS,
                        diag.HASIL_LAB, diag.TANGGAL_HASIL_LAB'
             )
-            ->join("Paket p", "p.id_paket = a.ID_PAKET", "left")
-            ->join("Dokter d", "d.ID_DOKTER = a.ID_DOKTER", "left")
+            ->join("paket p", "p.id_paket = a.id_paket", "left")
+            ->join("dokter d", "d.id_dokter = a.id_dokter", "left")
             ->join(
-                "Spesialisasi s",
+                "spesialisasi s",
                 "s.id_spesialisasi = d.id_spesialisasi",
                 "left"
             )
-            ->join("DIAGNOSIS diag", "diag.ID_JANJI = a.ID_JANJI_TEMU", "left")
-            ->where("a.ID_JANJI_TEMU", $id);
+            ->join("diagnosis diag", "diag.ID_JANJI = a.id_janji_temu", "left")
+            ->where("a.id_janji_temu", $id);
 
         return $builder->get()->getRowArray();
     }
@@ -105,7 +105,7 @@ class AppointmentModel extends Model
     public function saveDiagnosis($data)
     {
         $db = \Config\Database::connect();
-        $builder = $db->table("DIAGNOSIS");
+        $builder = $db->table("diagnosis");
 
         return $builder->insert($data);
     }
@@ -113,9 +113,9 @@ class AppointmentModel extends Model
     public function updateDiagnosis($id, $data)
     {
         $db = \Config\Database::connect();
-        $builder = $db->table("DIAGNOSIS");
+        $builder = $db->table("diagnosis");
 
-        return $builder->where("ID_DIAGNOSIS", $id)->update($data);
+        return $builder->where("id_diagnosis", $id)->update($data);
     }
     /**
      * Check if a doctor is available at a specific date and time
@@ -135,11 +135,11 @@ class AppointmentModel extends Model
 
         // Check existing appointments
         $conflictingAppointments = $this->db
-            ->table("Janji_Temu")
-            ->where("ID_DOKTER", $doctorId)
+            ->table("janji_temu")
+            ->where("id_dokter", $doctorId)
             ->where("TANGGAL_JANJI", $date)
             ->where("WAKTU_JANJI", $time)
-            ->where("STATUS !=", "cancelled") // Ignore cancelled appointments
+            ->where("status !=", "cancelled") // Ignore cancelled appointments
             ->countAllResults();
 
         return $conflictingAppointments === 0;
@@ -154,10 +154,10 @@ class AppointmentModel extends Model
     public function getLastCompletedAppointmentDate($patientId)
     {
         $result = $this->db
-            ->table("Janji_Temu")
+            ->table("janji_temu")
             ->select("TANGGAL_JANJI")
-            ->where("ID_PASIEN", $patientId)
-            ->where("STATUS", "completed")
+            ->where("id_pasien", $patientId)
+            ->where("status", "completed")
             ->orderBy("TANGGAL_JANJI", "DESC")
             ->limit(1)
             ->get()
@@ -175,9 +175,9 @@ class AppointmentModel extends Model
     public function getTotalCompletedAppointments($patientId)
     {
         return $this->db
-            ->table("Janji_Temu")
-            ->where("ID_PASIEN", $patientId)
-            ->where("STATUS", "completed")
+            ->table("janji_temu")
+            ->where("id_pasien", $patientId)
+            ->where("status", "completed")
             ->countAllResults();
     }
 
@@ -187,13 +187,13 @@ class AppointmentModel extends Model
     public function getDoctorAppointmentsByDate($doctorId, $date)
     {
         return $this->db
-            ->table("Janji_Temu a")
+            ->table("janji_temu a")
             ->select(
-                "a.*, p.NAMA_LENGKAP as patient_name, p.NO_TELP_PASIEN as patient_phone, pa.nama_paket"
+                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
             )
-            ->join("Pasien p", "p.PASIEN_ID = a.ID_PASIEN", "left")
-            ->join("Paket pa", "pa.id_paket = a.ID_PAKET", "left")
-            ->where("a.ID_DOKTER", $doctorId)
+            ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
+            ->join("paket pa", "pa.id_paket = a.id_paket", "left")
+            ->where("a.id_dokter", $doctorId)
             ->where("a.TANGGAL_JANJI", $date)
             ->orderBy("a.WAKTU_JANJI", "ASC")
             ->get()
@@ -206,14 +206,14 @@ class AppointmentModel extends Model
     public function getDoctorPendingAppointments($doctorId)
     {
         return $this->db
-            ->table("Janji_Temu a")
+            ->table("janji_temu a")
             ->select(
-                "a.*, p.NAMA_LENGKAP as patient_name, p.NO_TELP_PASIEN as patient_phone, pa.nama_paket"
+                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
             )
-            ->join("Pasien p", "p.PASIEN_ID = a.ID_PASIEN", "left")
-            ->join("Paket pa", "pa.id_paket = a.ID_PAKET", "left")
-            ->where("a.ID_DOKTER", $doctorId)
-            ->where("a.STATUS", "pending")
+            ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
+            ->join("paket pa", "pa.id_paket = a.id_paket", "left")
+            ->where("a.id_dokter", $doctorId)
+            ->where("a.status", "pending")
             ->where("a.TANGGAL_JANJI >=", date("Y-m-d"))
             ->orderBy("a.TANGGAL_JANJI", "ASC")
             ->orderBy("a.WAKTU_JANJI", "ASC")
@@ -227,14 +227,14 @@ class AppointmentModel extends Model
     public function getDoctorAppointmentsByStatus($doctorId, $status)
     {
         return $this->db
-            ->table("Janji_Temu a")
+            ->table("janji_temu a")
             ->select(
-                "a.*, p.NAMA_LENGKAP as patient_name, p.NO_TELP_PASIEN as patient_phone, pa.nama_paket"
+                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
             )
-            ->join("Pasien p", "p.PASIEN_ID = a.ID_PASIEN", "left")
-            ->join("Paket pa", "pa.id_paket = a.ID_PAKET", "left")
-            ->where("a.ID_DOKTER", $doctorId)
-            ->where("a.STATUS", $status)
+            ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
+            ->join("paket pa", "pa.id_paket = a.id_paket", "left")
+            ->where("a.id_dokter", $doctorId)
+            ->where("a.status", $status)
             ->orderBy("a.TANGGAL_JANJI", "DESC")
             ->orderBy("a.WAKTU_JANJI", "ASC")
             ->get()
@@ -247,13 +247,13 @@ class AppointmentModel extends Model
     public function getDoctorAllAppointments($doctorId)
     {
         return $this->db
-            ->table("Janji_Temu a")
+            ->table("janji_temu a")
             ->select(
-                "a.*, p.NAMA_LENGKAP as patient_name, p.NO_TELP_PASIEN as patient_phone, pa.nama_paket"
+                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
             )
-            ->join("Pasien p", "p.PASIEN_ID = a.ID_PASIEN", "left")
-            ->join("Paket pa", "pa.id_paket = a.ID_PAKET", "left")
-            ->where("a.ID_DOKTER", $doctorId)
+            ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
+            ->join("paket pa", "pa.id_paket = a.id_paket", "left")
+            ->where("a.id_dokter", $doctorId)
             ->orderBy("a.TANGGAL_JANJI", "DESC")
             ->orderBy("a.WAKTU_JANJI", "ASC")
             ->get()
@@ -263,19 +263,19 @@ class AppointmentModel extends Model
     /**
      * Get patients waiting for diagnosis
      */
-    public function getPatientsWaitingForDiagnosis($doctorId)
+    public function getPatientsWaitingFordiagnosis($doctorId)
     {
         return $this->db
-            ->table("Janji_Temu a")
+            ->table("janji_temu a")
             ->select(
-                "a.*, p.NAMA_LENGKAP as patient_name, p.NO_TELP_PASIEN as patient_phone, pa.nama_paket"
+                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
             )
-            ->join("Pasien p", "p.PASIEN_ID = a.ID_PASIEN", "left")
-            ->join("Paket pa", "pa.id_paket = a.ID_PAKET", "left")
-            ->where("a.ID_DOKTER", $doctorId)
-            ->where("a.STATUS", "confirmed")
+            ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
+            ->join("paket pa", "pa.id_paket = a.id_paket", "left")
+            ->where("a.id_dokter", $doctorId)
+            ->where("a.status", "confirmed")
             ->where(
-                "NOT EXISTS (SELECT 1 FROM Diagnosis d WHERE d.id_janji_temu = a.ID_JANJI_TEMU)"
+                "NOT EXISTS (SELECT 1 FROM diagnosis d WHERE d.id_janji_temu = a.id_janji_temu)"
             )
             ->get()
             ->getResultArray();
@@ -287,21 +287,21 @@ class AppointmentModel extends Model
     public function getPatientsWithNewLabResults($doctorId)
     {
         return $this->db
-            ->table("Janji_Temu a")
+            ->table("janji_temu a")
             ->select(
-                "a.*, p.NAMA_LENGKAP as patient_name, p.NO_TELP_PASIEN as patient_phone, pa.nama_paket"
+                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
             )
-            ->join("Pasien p", "p.PASIEN_ID = a.ID_PASIEN", "left")
-            ->join("Paket pa", "pa.id_paket = a.ID_PAKET", "left")
+            ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
+            ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->join(
                 "Lab_Orders lo",
-                "lo.id_janji_temu = a.ID_JANJI_TEMU",
+                "lo.id_janji_temu = a.id_janji_temu",
                 "left"
             )
-            ->where("a.ID_DOKTER", $doctorId)
-            ->where("a.STATUS", "awaiting_lab_results")
+            ->where("a.id_dokter", $doctorId)
+            ->where("a.status", "awaiting_lab_results")
             ->where("lo.status", "completed")
-            ->groupBy("a.ID_JANJI_TEMU")
+            ->groupBy("a.id_janji_temu")
             ->get()
             ->getResultArray();
     }

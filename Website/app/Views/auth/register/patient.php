@@ -46,8 +46,8 @@
                                     <input :type="showPassword ? 'text' : 'password'" class="form-control" id="password" name="password" required minlength="8">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" type="button" @click="showPassword = !showPassword">
-                                            <i class="fa" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                            {{ showPassword ? 'Hide' : 'Show' }}
+                                            <i :class="showPassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+                                            <span x-text="showPassword ? 'Show' : 'Hide'"></span>
                                         </button>
                                     </div>
                                 </div>
@@ -60,8 +60,8 @@
                                     <input :type="showPassword ? 'text' : 'password'" class="form-control" id="confirm_password" name="confirm_password" required minlength="8">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" type="button" @click="showPassword = !showPassword">
-                                            <i class="fa" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                            {{ showPassword ? 'Hide' : 'Show' }}
+                                            <i :class="showPassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+                                            <span x-text="showPassword ? 'Show' : 'Hide'"></span>
                                         </button>
                                     </div>
                                 </div>

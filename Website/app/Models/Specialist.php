@@ -4,7 +4,7 @@ use CodeIgniter\Model;
 
 class SpesialisasiModel extends Model
 {
-    protected $table = "Spesialisasi";
+    protected $table = "spesialisasi";
     protected $primaryKey = "id_spesialisasi";
     protected $allowedFields = [
         "nama_spesialisasi",

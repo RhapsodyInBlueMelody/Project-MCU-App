@@ -20,23 +20,15 @@ class UserModel extends Model
     protected $createdField = "created_at";
     protected $updatedField = "updated_at";
 
-    public function getUserByEmailOrUsername($login, $role)
-    {
-        return $this->where("email", $login)
-            ->orWhere("username", $login)
-            ->where("role", $role)
-            ->where("status", 1)
-            ->first();
-    }
 
-    public function getUserByEmailOrUsernameFixed($login, $role)
+    public function getUserByEmailOrUsername($login, $role)
     {
         return $this->where("role", $role)
             ->where("status", 1)
-            ->group_start()
-            ->where("email", $login)
-            ->orWhere("username", $login)
-            ->group_end()
+            ->groupStart()
+                ->where("email", $login)
+                ->orWhere("username", $login)
+            ->groupEnd()
             ->first();
     }
 
@@ -71,5 +63,23 @@ class UserModel extends Model
 
         $userId = $this->insert($data);
         return $this->find($userId);
+    }
+
+    public function authenticateDoctor($login, $password)
+    {
+        return $this->where("role", "dokter")
+            ->where("status", 1)
+            ->groupStart()
+                ->where("email", $login)
+                ->orWhere("username", $login)
+            ->groupEnd()
+            ->first();
+
+        if(!$user || !password_verify($password, $user['password'])) {
+            return null;
+        }
+
+        return $user;
+        
     }
 }

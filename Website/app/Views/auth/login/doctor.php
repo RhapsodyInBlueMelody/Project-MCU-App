@@ -20,10 +20,10 @@
             </div>
 
             <div class="p-6">
-                <?php if (session()->getFlashdata("msg")): ?>
+                <?php if (session()->getFlashdata("error")): ?>
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                         <span class="block sm:inline"><?= session()->getFlashdata(
-                            "msg"
+                            "error"
                         ) ?></span>
                     </div>
                 <?php endif; ?>
@@ -38,8 +38,9 @@
 
                 <form action="<?= base_url(
                     "auth/authenticate"
-                ) ?>" method="post" class="mt-4">
-                    <input type="hidden" name="role" value="doctor">
+                        ) ?>" method="post" class="mt-4">
+                        <?= csrf_field() ?> <!-- Add CSRF protection -->
+                    <input type="hidden" name="role" value="dokter">
                     <div class="mb-4">
                         <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username or Email</label>
                         <input type="text" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="username" id="username" placeholder="Enter username or email" required>

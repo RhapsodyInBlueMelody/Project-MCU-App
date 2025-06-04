@@ -15,7 +15,7 @@ class Auth extends BaseController
     {
         // Check if already logged in
         if (session()->has("patient_logged_in")) {
-            return redirect()->to("/patient/dashboard");
+            return redirect()->to("/pasien/dashboard");
         }
 
         return view("auth/patient_login");
@@ -25,7 +25,7 @@ class Auth extends BaseController
     {
         // Check if already logged in
         if (session()->has("doctor_logged_in")) {
-            return redirect()->to("/doctor/dashboard");
+            return redirect()->to("/dokter/dashboard");
         }
 
         return view("auth/doctor_login");

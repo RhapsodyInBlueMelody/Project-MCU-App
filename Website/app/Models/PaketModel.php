@@ -4,50 +4,50 @@ use CodeIgniter\Model;
 
 class PaketModel extends Model
 {
-    protected $table = "Paket";
+    protected $table = "paket";
     protected $primaryKey = "id_paket";
     protected $allowedFields = [
         "nama_paket",
-        "deskripsi_singkat",
-        "harga_paket",
-        "id_spesialisasi_dibutuhkan",
+        "deskripsi",
+        "harga",
+        "id_spesialisasi",
         "created_by",
-        "created_at",
         "updated_by",
-        "updated_at",
     ];
     protected $useTimestamps = true;
+    protected $createdField = "created_at";
+    protected $updatedField = "updated_at";
 
     public function getAllPackagesWithSpecialization()
     {
         $result = $this->db
-            ->table("Paket")
+            ->table("paket")
             ->select(
-                "Paket.*, Spesialisasi.nama_spesialisasi AS keahlian_dibutuhkan_text"
+                "paket.*, spesialisasi.nama_spesialisasi AS keahlian_dibutuhkan_text"
             )
             ->join(
-                "Spesialisasi",
-                "Paket.id_spesialisasi_dibutuhkan = Spesialisasi.id_spesialisasi",
+                "spesialisasi",
+                "paket.id_spesialisasi = spesialisasi.id_spesialisasi",
                 "left"
             )
             ->get()
             ->getResultArray();
 
         // Log the query for debugging
-        // log_message('debug', 'Package query: ' . $this->db->getLastQuery());
+         //log_message('debug', 'Package query: ' . $this->db->getLastQuery());
 
         return $result;
     }
     public function findPackageByIdWithSpecialization($packageId)
     {
         return $this->db
-            ->table("Paket")
+            ->table("paket")
             ->select(
-                "Paket.*, Spesialisasi.nama_spesialisasi AS keahlian_dibutuhkan_text"
+                "paket.*, spesialisasi.nama_spesialisasi AS keahlian_dibutuhkan_text"
             )
             ->join(
-                "Spesialisasi",
-                "Paket.id_spesialisasi_dibutuhkan = Spesialisasi.id_spesialisasi",
+                "spesialisasi",
+                "paket.id_spesialisasi = spesialisasi.id_spesialisasi",
                 "left"
             )
             ->where("id_paket", $packageId)

@@ -1,7 +1,7 @@
 <?php namespace App\Controllers;
 
 use App\Models\UserModel;
-use App\Models\PatientModel;
+use App\Models\PasienModel;
 use App\Models\DokterModel;
 use App\Models\AdminModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -13,7 +13,7 @@ class AuthController extends BaseController
 {
     protected $session;
     protected $userModel;
-    protected $patientModel;
+    protected $pasienModel;
     protected $dokterModel;
     protected $adminModel;
     protected $googleConfig;
@@ -28,7 +28,7 @@ class AuthController extends BaseController
 
         $this->session = session();
         $this->userModel = new UserModel();
-        $this->patientModel = new PatientModel();
+        $this->pasienModel = new PasienModel();
         $this->dokterModel = new DokterModel();
         $this->adminModel = new AdminModel();
 
@@ -49,21 +49,21 @@ class AuthController extends BaseController
 
 
     /**
-     * Patient login page
+     * pasien login page
      */
-    public function patientLogin()
+    public function pasienLogin()
     {
-        // If already logged in as patient, redirect to dashboard
+        // If already logged in as pasien, redirect to dashboard
         if (
-            $this->session->get("role") === "patient" &&
+            $this->session->get("role") === "pasien" &&
             $this->session->get("isLoggedIn")
         ) {
-            return redirect()->to("/patient/dashboard");
+            return redirect()->to("/pasien/dashboard");
         }
 
-        $this->session->set("intended_role", "patient");
-        $data = ["title" => "Patient Login"];
-        return view("auth/login/patient", $data);
+        $this->session->set("intended_role", "pasien");
+        $data = ["title" => "pasien Login"];
+        return view("auth/login/pasien", $data);
     }
 
     /**
@@ -73,15 +73,15 @@ class AuthController extends BaseController
     {
         // If already logged in as doctor, redirect to dashboard
         if (
-            $this->session->get("role") === "doctor" &&
+            $this->session->get("role") === "dokter" &&
             $this->session->get("isLoggedIn")
         ) {
-            return redirect()->to("/doctor/dashboard");
+            return redirect()->to("/dokter/dashboard");
         }
 
-        $this->session->set("intended_role", "doctor");
+        $this->session->set("intended_role", "dokter");
         $data["title"] = "Doctor Login";
-        return view("auth/login/doctor", $data);
+        return view("auth/login/dokter", $data);
     }
 
     /**
@@ -106,12 +106,6 @@ class AuthController extends BaseController
      */
     public function authenticate(): RedirectResponse
     {
-        // Validate CSRF token
-        if (!$this->validateRequest()) {
-            return redirect()
-                ->back()
-                ->with("error", "Invalid form submission.");
-        }
 
         $username = $this->request->getPost("username");
         $password = $this->request->getPost("password");
@@ -132,19 +126,19 @@ class AuthController extends BaseController
         $redirectUrl = "/";
 
         switch ($role) {
-            case "patient":
-                $authenticated = $this->authenticatePatient(
+            case "pasien":
+                $authenticated = $this->authenticatePasien(
                     $username,
                     $password
                 );
-                $redirectUrl = "/patient/dashboard";
+                $redirectUrl = "/pasien/dashboard";
                 break;
-            case "doctor":
+            case "dokter":
                 $authenticated = $this->authenticateDoctor(
                     $username,
                     $password
                 );
-                $redirectUrl = "/doctor/dashboard";
+                $redirectUrl = "/dokter/dashboard";
                 break;
             case "admin":
                 $authenticated = $this->authenticateAdmin($username, $password);
@@ -176,49 +170,46 @@ class AuthController extends BaseController
     }
 
     /**
-     * Patient authentication method
+     * pasien authentication method
      */
-    private function authenticatePatient(
-        string $username,
-        string $password
-    ): bool {
-        $user = $this->userModel
-            ->where("role", "patient")
-            ->where(function ($query) use ($username) {
-                $query
-                    ->where("username", $username)
-                    ->orWhere("email", $username);
-            })
-            ->first();
+    private function authenticatePasien(string $login, string $password): bool
+    {
+        $user = $this->userModel->getUserByEmailOrUsername($login, 'pasien');
+        // Debug log: see what you get from the DB
+        log_message('debug', 'Login query for [' . $login . '] returned: ' . print_r($user, true));
 
         if (!$user) {
+            // Set a session flash message for user not found
+            session()->setFlashdata('msg', 'Username or email not found.');
             return false;
         }
-
+        if (empty($user["password"])) {
+            session()->setFlashdata('msg', 'Password is not set for this account.');
+            return false;
+        }
         if (!password_verify($password, $user["password"])) {
+            // Set a session flash message for wrong password
+            session()->setFlashdata('msg', 'Incorrect password for this account.');
             return false;
         }
-
-        // Get patient profile
-        $patient = $this->patientModel
+        // Get pasien profile
+        $pasien = $this->pasienModel
             ->where("user_id", $user["user_id"])
             ->first();
-
-        if (!$patient) {
+        if (!$pasien) {
+            session()->setFlashdata('msg', 'pasien profile not found.');
             return false;
         }
-
         // Set session data
         $this->session->set([
-            "user_id" => $user["user_id"],
-            "username" => $user["username"],
-            "email" => $user["email"],
-            "role" => "patient",
-            "patient_id" => $patient["PASIEN_ID"],
-            "full_name" => $patient["NAMA_LENGKAP"],
+            "user_id"    => $user["user_id"],
+            "username"   => $user["username"],
+            "email"      => $user["email"],
+            "role"       => "pasien",
+            "id_pasien" => $pasien["id_pasien"],
+            "nama_pasien"  => $pasien["nama_pasien"],
             "isLoggedIn" => true,
         ]);
-
         return true;
     }
 
@@ -229,43 +220,23 @@ class AuthController extends BaseController
         string $username,
         string $password
     ): bool {
-        $user = $this->userModel
-            ->where("role", "doctor")
-            ->where(function ($query) use ($username) {
-                $query
-                    ->where("username", $username)
-                    ->orWhere("email", $username);
-            })
-            ->first();
+        $user = $this->userModel->authenticateDoctor($username, $password);
 
         if (!$user) {
             return false;
         }
 
-        if (!password_verify($password, $user["password"])) {
-            return false;
-        }
+        $doctorProfile = $this->dokterModel->getVerifiedDoctorProfile($user["user_id"]);
 
-        // Get doctor profile and check verification status
-        $doctor = $this->dokterModel
-            ->where("user_id", $user["user_id"])
-            ->first();
-
-        if (!$doctor) {
-            return false;
-        }
-
-        // Check if doctor is verified
-        if (
-            $doctor["is_verified"] != 1 ||
-            $doctor["verification_status"] !== "approved"
-        ) {
-            $statusMessage = "Your account has not been verified yet.";
-
-            if ($doctor["verification_status"] === "rejected") {
-                $statusMessage =
-                    "Your account verification was rejected. Reason: " .
-                    ($doctor["verification_notes"] ?? "No reason provided.");
+        if (isset($doctorProfile["error"])) {
+            if ($doctorProfile["error"] === "not_found") {
+                $statusMessage = "Doctor profile not found.";
+            } elseif ($doctorProfile["error"] === "not_verified") {
+                $statusMessage = "Your account is pending verification.";
+            } elseif ($doctorProfile["error"] === "rejected") {
+                $statusMessage = "Your account verification was rejected. Reason: " . ($doctorProfile["verification_notes"] ?? "No reason provided.");
+            } else {
+                $statusMessage = "An unexpected error occurred while fetching your profile.";
             }
 
             session()->setFlashdata("error", $statusMessage);
@@ -275,15 +246,14 @@ class AuthController extends BaseController
         // Set session data
         $this->session->set([
             "user_id" => $user["user_id"],
+            "doctor_id" => $doctorProfile["id_dokter"],
             "username" => $user["username"],
             "email" => $user["email"],
-            "role" => "doctor",
-            "doctor_id" => $doctor["ID_DOKTER"],
-            "full_name" => $doctor["NAMA_DOKTER"],
-            "specialization" => $doctor["id_spesialisasi"],
+            "role" => "dokter",
+            "nama_dokter" => $doctorProfile["nama_dokter"],
+            "id_spesialisasi" => $doctorProfile["id_spesialisasi"],
             "isLoggedIn" => true,
         ]);
-
         return true;
     }
 
@@ -332,25 +302,25 @@ class AuthController extends BaseController
     }
 
     /**
-     * Default register method redirects to patient registration
+     * Default register method redirects to pasien registration
      */
     public function register(): RedirectResponse
     {
-        return redirect()->to("/auth/register/patient");
+        return redirect()->to("/auth/register/pasien");
     }
 
     /**
-     * Patient registration form
+     * pasien registration form
      */
-    public function registerPatient()
+    public function registerpasien()
     {
         $data = [
-                "title" => "Patient Register",
+                "title" => "pasien Register",
                 "google_data" => [
-                    "intended_role" => "patient"
+                    "intended_role" => "pasien"
                 ]
             ];
-        return view("auth/register/patient", $data);
+        return view("auth/register/pasien", $data);
     }
 
     /**
@@ -370,12 +340,6 @@ class AuthController extends BaseController
      */
     public function saveDoctorRegistration()
     {
-        // Validate CSRF token
-        if (!$this->validateRequest()) {
-            return redirect()
-                ->back()
-                ->with("error", "Invalid form submission.");
-        }
 
         // Validate input
         $validation = \Config\Services::validation();
@@ -428,7 +392,7 @@ class AuthController extends BaseController
             // Create doctor profile
             $doctorData = [
                 "user_id" => $userId,
-                "NAMA_DOKTER" => htmlspecialchars(
+                "nama_dokter" => htmlspecialchars(
                     $this->request->getPost("nama_dokter"),
                     ENT_QUOTES,
                     "UTF-8"
@@ -488,10 +452,10 @@ class AuthController extends BaseController
     /**
      * Google login initiation
      */
-    public function googleLogin($role = "patient")
+    public function googleLogin($role = "pasien")
     {
         // Validate role
-        if (!in_array($role, ["patient", "doctor", "admin"])) {
+        if (!in_array($role, ["pasien", "doctor", "admin"])) {
             return redirect()
                 ->to("auth/login")
                 ->with("error", "Invalid role specified for Google login.");
@@ -512,10 +476,10 @@ class AuthController extends BaseController
     /**
      * Google callback handler
      */
-    public function googleCallback($role = "patient")
+    public function googleCallback($role = "pasien")
     {
         // Validate role
-        if (!in_array($role, ["patient", "doctor", "admin"])) {
+        if (!in_array($role, ["pasien", "doctor", "admin"])) {
             return redirect()
                 ->to("auth/login")
                 ->with("error", "Invalid role specified for Google login.");
@@ -684,7 +648,7 @@ class AuthController extends BaseController
     /**
      * Social registration form
      */
-    public function registerSocial($role = "patient")
+    public function registerSocial($role = "pasien")
     {
         $googleData = $this->session->get('google_data');
         // Prefer role from google_data, then from session, fallback to URL param
@@ -702,12 +666,6 @@ class AuthController extends BaseController
      */
     public function completeDoctorSocialRegistration()
     {
-        // Validate CSRF token
-        if (!$this->validateRequest()) {
-            return redirect()
-                ->back()
-                ->with("error", "Invalid form submission.");
-        }
 
         $googleData = $this->session->get("google_data");
 
@@ -765,7 +723,7 @@ class AuthController extends BaseController
             // Create doctor profile
             $doctorData = [
                 "user_id" => $userId,
-                "NAMA_DOKTER" => $googleData["name"],
+                "nama_dokter" => $googleData["name"],
                 "id_spesialisasi" => (int) $this->request->getPost(
                     "id_spesialisasi"
                 ),
@@ -816,7 +774,7 @@ class AuthController extends BaseController
     }
 
     /**
-     * Complete social patient registration
+     * Complete social pasien registration
      */
     public function completeSocialRegistration()
     {
@@ -832,6 +790,7 @@ class AuthController extends BaseController
             "jenis_kelamin" => "required|in_list[L,P]",
             "no_telp_pasien" => "required|numeric|min_length[10]",
             "tempat_lahir" => "required",
+            "lokasi" => "required|in_list[JKT,BDG,SBY]",
             "tanggal_lahir" => "required|valid_date",
             "alamat" => "required",
         ]);
@@ -851,74 +810,73 @@ class AuthController extends BaseController
         // Start transaction
         $db = \Config\Database::connect();
         $db->transStart();
-
+        
         try {
+            $lokasi = $this->request->getPost('lokasi'); // <-- add semicolon
+        
             // Create user account
             $userModel = new \App\Models\UserModel();
             $userData = [
                 "username" => $username,
                 "email" => $email,
-                "password" => password_hash($password, PASSWORD_DEFAULT), // Hash the password
-                "role" => "patient",
+                "password" => password_hash($password, PASSWORD_DEFAULT),
+                "role" => "pasien",
                 "status" => "active",
             ];
-
             $userModel->insert($userData);
             $userId = $userModel->getInsertID();
-
-            // Create patient profile
-            $patientModel = new \App\Models\PatientModel();
-            $patientData = [
-                "user_id" => $userId,
-                "nama_pasien" => $this->request->getPost("NAMA_PASIEN"),
+        
+            // Generate custom pasien ID using stored procedure
+            $db->query("CALL GeneratePasienID(?, @new_id)", [$lokasi]);
+            $newIdQuery = $db->query("SELECT @new_id AS id_pasien");
+            $newIdPasien = $newIdQuery->getRow()->id_pasien;
+        
+            // Create pasien profile
+            $pasienModel = new \App\Models\PasienModel();
+            $pasienData = [
+                "user_id"       => $userId,
+                "id_pasien"     => $newIdPasien,
+                "no_identitas"  => $this->request->getPost("no_identitas"),
+                "nama_pasien"   => $this->request->getPost("nama_pasien"),
                 "jenis_kelamin" => $this->request->getPost("jenis_kelamin"),
-                "no_telp_pasien" => $this->request->getPost("no_telp_pasien"),
-                "tempat_lahir" => $this->request->getPost("tempat_lahir"),
+                "telepon"       => $this->request->getPost("telepon"),
+                "tempat_lahir"  => $this->request->getPost("tempat_lahir"),
                 "tanggal_lahir" => $this->request->getPost("tanggal_lahir"),
-                "alamat" => $this->request->getPost("alamat"),
-                "email" => $email,
+                "alamat"        => $this->request->getPost("alamat"),
+                "email"         => $email,
+                "lokasi"        => $lokasi,
+                "created_by"    => $userId,
+                "updated_by"    => $userId,
             ];
-
-            $patientModel->insert($patientData);
-            $patientId = $patientModel->getInsertID();
-
+            $pasienModel->insert($pasienData);
+        
             $db->transComplete();
-
+        
             if ($db->transStatus() === false) {
                 throw new \Exception("Database transaction failed.");
             }
-
-            // Set up the patient session
+        
+            // Set up the pasien session
             $session = session();
-            $sessionData = [
-                "user_id" => $userId,
-                "username" => $username,
-                "email" => $email,
-                "role" => "patient",
-                "patient_id" => $patientId,
-                "is_logged_in" => true,
-            ];
-            $session->set($sessionData);
-
+            $session->set([
+                "user_id"     => $userId,
+                "username"    => $username,
+                "email"       => $email,
+                "role"        => "pasien",
+                "pasien_id"  => $newIdPasien, // use the custom ID here!
+                "is_logged_in"=> true,
+            ]);
+        
             return redirect()
-                ->to("/patient/dashboard")
-                ->with(
-                    "success",
-                    "Registration completed successfully. Welcome to our healthcare system!"
-                );
+                ->to("/pasien/dashboard")
+                ->with("success", "Registration completed successfully. Welcome to our healthcare system!");
         } catch (\Exception $e) {
             $db->transRollback();
             log_message("error", "Registration error: " . $e->getMessage());
-
+        
             return redirect()
                 ->back()
-                ->with(
-                    "error",
-                    "Registration failed: " .
-                        (ENVIRONMENT === "production"
-                            ? "A system error occurred."
-                            : $e->getMessage())
-                )
+                ->with("error", "Registration failed: " . (ENVIRONMENT === "production" ? "A system error occurred." : $e->getMessage()))
                 ->withInput();
         }
     }
@@ -928,7 +886,7 @@ class AuthController extends BaseController
     public function logout($role = null)
     {
         // Validate role
-        if (!in_array($role, ["patient", "doctor", "admin"])) {
+        if (!in_array($role, ["pasien", "doctor", "admin"])) {
             return redirect()
                 ->to("/")
                 ->with("error", "Invalid role specified.");
@@ -957,23 +915,23 @@ class AuthController extends BaseController
         ];
 
         // Add role-specific session data
-        if ($user["role"] === "patient") {
-            $patient = $this->patientModel
+        if ($user["role"] === "pasien") {
+            $pasien = $this->pasienModel
                 ->where("user_id", $user["user_id"])
                 ->first();
-            if ($patient) {
-                $sessionData["patient_id"] = $patient["PASIEN_ID"];
+            if ($pasien) {
+                $sessionData["pasien_id"] = $pasien["PASIEN_ID"];
                 $sessionData["full_name"] =
-                    $patient["NAMA_LENGKAP"] ?? $user["username"];
+                    $pasien["NAMA_LENGKAP"] ?? $user["username"];
             }
         } elseif ($user["role"] === "doctor") {
             $doctor = $this->dokterModel
                 ->where("user_id", $user["user_id"])
                 ->first();
             if ($doctor) {
-                $sessionData["doctor_id"] = $doctor["ID_DOKTER"];
+                $sessionData["id_dokter"] = $doctor["id_dokter"];
                 $sessionData["full_name"] =
-                    $doctor["NAMA_DOKTER"] ?? $user["username"];
+                    $doctor["nama_dokter"] ?? $user["username"];
                 $sessionData["specialization"] = $doctor["id_spesialisasi"];
             }
         } elseif ($user["role"] === "admin") {
@@ -1003,8 +961,8 @@ class AuthController extends BaseController
     private function getRedirectUrl(string $role): string
     {
         switch ($role) {
-            case "patient":
-                return "/patient/dashboard";
+            case "pasien":
+                return "/pasien/dashboard";
             case "doctor":
                 return "/doctor/dashboard";
             case "admin":
@@ -1014,14 +972,6 @@ class AuthController extends BaseController
         }
     }
 
-    /**
-     * Validate CSRF token and other request validations
-     */
-    private function validateRequest(): bool
-    {
-        // Check CSRF token
-        return $this->request->hasValidCSRFToken();
-    }
 
     /**
      * Generate unique username from a name

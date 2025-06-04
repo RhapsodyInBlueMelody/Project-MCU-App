@@ -23,20 +23,19 @@ $routes->group("rumah-sakit", function ($routes) {
 });
 
 $routes->group("auth", ["namespace" => "App\Controllers"], function ($routes) {
-    // Login Routes
-    $routes->get("patient/login", "AuthController::patientLogin");
-    $routes->get("doctor/login", "AuthController::doctorLogin");
+    $routes->get("pasien/login", "AuthController::pasienLogin");
+    $routes->get("dokter/login", "AuthController::doctorLogin");
     $routes->get("admin/login", "AuthController::adminLogin");
     $routes->post("authenticate", "AuthController::authenticate");
 
     // Registration Routes
     $routes->get("register", "AuthController::register");
-    $routes->get("register/patient", "AuthController::registerPatient");
-    $routes->post("register/patient", "AuthController::savePatient");
-    $routes->get("register/doctor", "AuthController::registerDoctor");
+    $routes->get("register/pasien", "AuthController::registerPatient");
+    $routes->post("register/pasien", "AuthController::savePatient");
+    $routes->get("register/dokter", "AuthController::registerDoctor");
     $routes->post(
-        "register/doctor/save",
-        "AuthController::saveDoctorRegistration"
+        "register/dokter/save",
+        "AuthController::savedokterRegistration"
     );
 
     // Logout Route
@@ -59,68 +58,68 @@ $routes->group("auth", ["namespace" => "App\Controllers"], function ($routes) {
         "AuthController::completeSocialRegistration"
     );
     $routes->post(
-        "complete-doctor-social-registration",
-        "AuthController::completeDoctorSocialRegistration"
+        "complete-dokter-social-registration",
+        "AuthController::completedokterSocialRegistration"
     );
 });
 
-// Patient Routes (protected)
+// pasien Routes (protected)
 $routes->group(
-    "patient",
-    ["namespace" => "App\Controllers", "filter" => "auth:patient"],
+    "pasien",
+    ["namespace" => "App\Controllers", "filter" => "auth:pasien"],
     function ($routes) {
-        $routes->get("dashboard", "Patient::dashboard");
-        $routes->get("beranda", "Patient::beranda");
-        $routes->get("appointment", "Patient::appointment");
-        $routes->post("appointment", "Patient::saveAppointment");
+        $routes->get("dashboard", "Pasien::dashboard");
+        $routes->get("beranda", "Pasien::beranda");
+        $routes->get("appointment", "Pasien::appointment");
+        $routes->post("appointment", "Pasien::saveAppointment");
         $routes->post(
             "cancel-appointment/(:num)",
-            "Patient::cancelAppointment/$1"
+            "Pasien::cancelAppointment/$1"
         );
         $routes->get(
             "cancel-appointment/(:num)",
-            'Patient::cancelAppointment/$1'
+            'Pasien::cancelAppointment/$1'
         );
-        $routes->get("jadwal-pemeriksaan", "Patient::jadwalPemeriksaan");
+        $routes->get("jadwal-pemeriksaan", "Pasien::jadwalPemeriksaan");
         $routes->get(
             "riwayat-pemeriksaan/(:num)",
-            "Patient::riwayatPemeriksaan/$1"
+            "Pasien::riwayatPemeriksaan/$1"
         );
     }
 );
 
-// Patient API Routes
+// pasien API Routes
 $routes->group(
-    "patient/api",
-    ["namespace" => "App\Controllers", "filter" => "auth:patient"],
+    "pasien/api",
+    ["namespace" => "App\Controllers", "filter" => "auth:pasien"],
     function ($routes) {
-        $routes->get("health-stats", "Patient::getHealthStats");
+        $routes->get("health-stats", "Pasien::getHealthStats");
     }
 );
 
-// Doctor Routes (protected)
+// dokter Routes (protected)
 $routes->group(
-    "doctor",
-    ["namespace" => "App\Controllers", "filter" => "auth:doctor"],
+    "dokter",
+    ["namespace" => "App\Controllers", "filter" => "auth:dokter"],
     function ($routes) {
-        $routes->get("dashboard", "Doctor::dashboard");
-        $routes->get("appointments/(:segment)", "Doctor::appointments/$1");
-        $routes->get("appointments", "Doctor::appointments");
-        $routes->get("appointment/(:num)", "Doctor::appointmentDetail/$1");
+        $routes->get("dashboard", "Dokter::dashboard");
+        $routes->get("appointments/(:segment)", "Dokter::appointments/$1");
+        $routes->get("appointments", "Dokter::appointments");
+        $routes->get("appointment/(:num)", "Dokter::appointmentDetail/$1");
         $routes->post(
             "update-appointment-status",
-            "Doctor::updateAppointmentStatus"
+            "Dokter::updateAppointmentStatus"
         );
-        $routes->get("diagnosis/(:num)", "Doctor::diagnosis/$1");
-        $routes->post("save-diagnosis", "Doctor::saveDiagnosis");
-        $routes->get("lab-results/(:num)", "Doctor::labResults/$1");
+        $routes->get("diagnosis/(:num)", "Dokter::diagnosis/$1");
+        $routes->post("save-diagnosis", "Dokter::saveDiagnosis");
+        $routes->get("lab-results/(:num)", "Dokter::labResults/$1");
         $routes->post(
             "complete-lab-results/(:num)",
-            "Doctor::completeWithLabResults/$1"
+            "Dokter::completeWithLabResults/$1"
         );
-        $routes->get("schedule", "Doctor::mySchedule");
-        $routes->get("profile", "Doctor::profile");
-        $routes->post("update-profile", "Doctor::updateProfile");
+        $routes->get("schedule", "Dokter::mySchedule");
+        $routes->get("profile", "Dokter::profile");
+        $routes->post("update-profile", "Dokter::updateProfile");
     }
 );
 
@@ -131,16 +130,16 @@ $routes->group(
     function ($routes) {
         $routes->get("dashboard", "Admin::dashboard");
         $routes->get(
-            "pending-doctor-verifications",
-            "Admin::pendingDoctorVerifications"
+            "pending-dokter-verifications",
+            "Admin::pendingdokterVerifications"
         );
-        $routes->get("verify-doctor/(:num)", "Admin::verifyDoctor/$1");
+        $routes->get("verify-dokter/(:num)", "Admin::verifyDoctor/$1");
         $routes->post(
-            "process-doctor-verification",
-            "Admin::processDoctorVerification"
+            "process-dokter-verification",
+            "Admin::processdokterVerification"
         );
-        $routes->get("doctor-management", "Admin::doctorManagement");
-        $routes->get("patient-management", "Admin::patientManagement");
+        $routes->get("dokter-management", "Admin::doctorManagement");
+        $routes->get("pasien-management", "Admin::patientManagement");
         $routes->get("appointment-management", "Admin::appointmentManagement");
         $routes->get("appointment/view/(:num)", "Admin::viewAppointment/$1");
         $routes->post(

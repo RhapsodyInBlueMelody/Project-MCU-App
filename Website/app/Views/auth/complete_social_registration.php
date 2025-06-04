@@ -70,31 +70,43 @@
                                 <div x-data="{ fullName: '', generateUsername() { this.username = this.fullName.toLowerCase().replace(/\s+/g, '_'); } }">
                                     <h4 class="mt-4">Personal Information</h4>
                                     <div class="form-group">
-                                        <label for="NAMA_PASIEN">Full Name</label>
-                                        <input type="text" class="form-control" name="NAMA_PASIEN" x-model="fullName" @input="generateUsername()" required>
+                                        <label for="nama_pasien">Full Name</label>
+                                        <input type="text" class="form-control" name="nama_pasien" x-model="fullName" @input="generateUsername()" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="JENIS_KELAMIN">Gender</label>
-                                        <select class="form-control" name="JENIS_KELAMIN" required>
+                                        <label for="jenis_kelamin">Gender</label>
+                                        <select class="form-control" name="jenis_kelamin" required>
                                             <option value="L">Male</option>
                                             <option value="P">Female</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="NO_TELP_PASIEN">Phone Number</label>
-                                        <input type="text" class="form-control" name="NO_TELP_PASIEN" required>
+                                        <label for="telepon">Phone Number</label>
+                                        <input type="text" class="form-control" name="no_telp_pasien" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="TEMPAT_LAHIR">Place of Birth</label>
-                                        <input type="text" class="form-control" name="TEMPAT_LAHIR" required>
+                                        <label for="no_identitas">No KTP</label>
+                                        <input type="text" class="form-control" name="no_identitas" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="TANGGAL_LAHIR">Date of Birth</label>
-                                        <input type="date" class="form-control" name="TANGGAL_LAHIR" required>
+                                        <label for="tempat_lahir">Place of Birth</label>
+                                        <input type="text" class="form-control" name="tempat_lahir" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="ALAMAT_PASIEN">Address</label>
-                                        <textarea class="form-control" name="ALAMAT_PASIEN" required></textarea>
+                                        <label for="tanggal_lahir">Date of Birth</label>
+                                        <input type="date" class="form-control" name="tanggal_lahir" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="location">Lokasi Rumah Sakit</label>
+                                        <select class="form-control" name="lokasi" required>
+                                            <option value="JKT">Cabang Jakarta</option>
+                                            <option value="BDG">Cabang Bandung</option>
+                                            <option value="SBY">Cabang Surabaya</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="alamat">Address</label>
+                                        <textarea class="form-control" name="alamat" required></textarea>
                                     </div>
                                 </div>
                                 <?php elseif ($role === "doctor"): ?>
