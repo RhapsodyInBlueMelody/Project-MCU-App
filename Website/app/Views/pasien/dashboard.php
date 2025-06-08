@@ -78,37 +78,37 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm"><?= date(
                                 "d M Y",
-                                strtotime($appointment["TANGGAL_JANJI"])
+                                strtotime($appointment["tanggal_janji"])
                             ) ?></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm"><?= date(
                                 "H:i",
-                                strtotime($appointment["WAKTU_JANJI"])
+                                strtotime($appointment["waktu_janji"])
                             ) ?> WIB</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><?= esc(
-                                $appointment["NAMA_JANJI"]
+                                $appointment["nama_janji"]
                             ) ?></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm"><?= esc(
-                                $appointment["NAMA_DOKTER"]
+                                $appointment["nama_dokter"]
                             ) ?></td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <?php if (
-                                    $appointment["STATUS"] === "pending"
+                                    $appointment["status"] === "pending"
                                 ): ?>
                                     <span class="inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800">Menunggu</span>
                                 <?php elseif (
-                                    $appointment["STATUS"] === "confirmed"
+                                    $appointment["status"] === "confirmed"
                                 ): ?>
                                     <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">Terkonfirmasi</span>
                                 <?php else: ?>
                                     <span class="inline-flex rounded-full bg-gray-100 px-2 text-xs font-semibold leading-5 text-gray-800"><?= ucfirst(
-                                        $appointment["STATUS"]
+                                        $appointment["status"]
                                     ) ?></span>
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600">
                                 <a href="<?= base_url(
                                     "pasien/riwayat-pemeriksaan/" .
-                                        $appointment["ID_JANJI_TEMU"]
+                                        $appointment["id_janji_temu"]
                                 ) ?>" class="hover:text-indigo-900">Detail</a>
                             </td>
                         </tr>

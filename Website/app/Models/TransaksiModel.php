@@ -12,6 +12,7 @@ class TransaksiModel extends Model
         'id_pasien', 
         'id_paket', 
         'tanggal_transaksi', 
+        'id_janji_temu',
         'total_harga', 
         'status_pembayaran',
         'doku_invoice_number',

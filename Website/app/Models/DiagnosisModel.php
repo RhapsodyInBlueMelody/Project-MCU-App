@@ -2,14 +2,14 @@
 
 use CodeIgniter\Model;
 
-class DiagnosisModel extends Model
+class diagnosisModel extends Model
 {
-    protected $table = "Diagnosis";
+    protected $table = "diagnosis";
     protected $primaryKey = "id";
     protected $allowedFields = [
         "id_janji_temu",
-        "ID_DOKTER",
-        "ID_PASIEN",
+        "id_dokter",
+        "id_pasien",
         "symptoms",
         "diagnosis_result",
         "treatment_plan",
@@ -29,12 +29,12 @@ class DiagnosisModel extends Model
     public function getDiagnosisDetails($diagnosisId)
     {
         return $this->db
-            ->table("Diagnosis d")
+            ->table("diagnosis d")
             ->select(
-                "d.*, p.NAMA_LENGKAP as patient_name, doc.NAMA_DOKTER as doctor_name"
+                "d.*, p.nama_pasien as patient_name, doc.nama_dokter as doctor_name"
             )
-            ->join("Pasien p", "p.PASIEN_ID = d.ID_PASIEN", "left")
-            ->join("Dokter doc", "doc.ID_DOKTER = d.ID_DOKTER", "left")
+            ->join("pasien p", "p.id_pasien = d.id_pasien", "left")
+            ->join("dokter doc", "doc.id_dokter = d.id_dokter", "left")
             ->where("d.id", $diagnosisId)
             ->get()
             ->getRowArray();
@@ -54,11 +54,11 @@ class DiagnosisModel extends Model
     public function getPatientDiagnoses($patientId)
     {
         return $this->db
-            ->table("Diagnosis d")
-            ->select("d.*, doc.NAMA_DOKTER as doctor_name, a.TANGGAL_JANJI")
-            ->join("Dokter doc", "doc.ID_DOKTER = d.ID_DOKTER", "left")
-            ->join("Janji_Temu a", "a.ID_JANJI_TEMU = d.id_janji_temu", "left")
-            ->where("d.ID_PASIEN", $patientId)
+            ->table("diagnosis d")
+            ->select("d.*, doc.nama_dokter as doctor_name, a.tanggal_janji")
+            ->join("dokter doc", "doc.id_dokter = d.id_dokter", "left")
+            ->join("janji_temu a", "a.id_janji_temu = d.id_janji_temu", "left")
+            ->where("d.id_pasien", $patientId)
             ->orderBy("d.created_at", "DESC")
             ->get()
             ->getResultArray();

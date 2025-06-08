@@ -2,52 +2,40 @@
 
 namespace App\Libraries;
 
-use CodeIgniter\HTTP\CURLRequest;
-use Config\Services;
-
 class DokuPayment
 {
     private $client_id;
     private $secret_key;
     private $base_url;
-    
+
     public function __construct()
     {
-        // Load from .env or config
-        $this->client_id = 'BRN-0216-1747201336667'; // Best to put in .env
-        $this->secret_key = 'SK-9aFaeTyPyx2rN0wJGRB4'; // Best to put in .env
-        $this->base_url = 'https://api-sandbox.doku.com'; // Change to production URL when ready
+        $this->client_id  = getenv('DOKU_CLIENT_ID');
+        $this->secret_key = getenv('DOKU_SECRET_KEY');
+        $this->base_url   = "https://api-sandbox.doku.com";
     }
-    
+
     public function createPayment($order_data)
     {
-        helper('doku'); // Load the helper
-        
-        // Prepare components for signature
+        helper('doku');
+
         $components = [
             'client_id' => $this->client_id,
-            'request_id' => generate_uuid(),
+            'request_id' => (string)$order_data['id_transaksi'],
             'request_timestamp' => gmdate('Y-m-d\TH:i:s\Z'),
             'request_target' => '/checkout/v1/payment'
         ];
-        
-        // Prepare request body
+
         $request_body = [
-            'order' => [
-                'amount' => $order_data['amount'],
-                'invoice_number' => $order_data['invoice_number'],
-                'currency' => 'IDR',
-                'line_items' => $order_data['items'] ?? []
-            ],
-            'payment' => [
-                'payment_due_date' => 60 // 60 minutes
-            ]
+            'order' => $order_data['order'],
+            'payment' => $order_data['payment'],
+            'customer' => $order_data['customer'],
+            'shipping_address' => $order_data['shipping_address'],
+            'billing_address' => $order_data['billing_address'],
         ];
-        
-        // Generate signature
+
         $signature = generate_doku_signature($components, $this->secret_key, $request_body);
-        
-        // Prepare headers
+
         $headers = [
             'Client-Id' => $components['client_id'],
             'Request-Id' => $components['request_id'],
@@ -55,22 +43,43 @@ class DokuPayment
             'Signature' => $signature,
             'Content-Type' => 'application/json'
         ];
-        
+
+        // LOG for debugging
+        log_message('debug', 'DOKU Request Headers: ' . json_encode($headers));
+        log_message('debug', 'DOKU Request Body: ' . json_encode($request_body, JSON_UNESCAPED_SLASHES));
+        log_message('debug', 'Server UTC now: ' . gmdate('Y-m-d\TH:i:s\Z'));
+
+        $client = \Config\Services::curlrequest();
+
         try {
-            // Create CURL request
-            $client = Services::curlrequest();
-            
-            $response = $client->setHeaders($headers)
-                             ->setBody(json_encode($request_body))
-                             ->post($this->base_url . $components['request_target']);
-            
-            return json_decode($response->getBody(), true);
-            
-        } catch (\Exception $e) {
-            log_message('error', 'DOKU Payment Error: ' . $e->getMessage());
+            $response = $client->post(
+                $this->base_url . $components['request_target'],
+                [
+                    'headers' => $headers,
+                    'body'    => json_encode($request_body, JSON_UNESCAPED_SLASHES)
+                ]
+            );
+        } catch (\Throwable $e) {
+            // Network error or something unexpected (not HTTP 400/500)
+            log_message('error', 'DOKU Payment Exception: ' . $e->getMessage());
             return [
                 'error' => true,
                 'message' => $e->getMessage()
+            ];
+        }
+
+        $status = $response->getStatusCode();
+        $body = $response->getBody();
+
+        if ($status >= 200 && $status < 300) {
+            return json_decode($body, true);
+        } else {
+            log_message('error', 'DOKU Payment Error: HTTP ' . $status);
+            log_message('error', 'DOKU Response Body: ' . $body);
+            return [
+                'error' => true,
+                'message' => 'HTTP ' . $status,
+                'response_body' => $body
             ];
         }
     }

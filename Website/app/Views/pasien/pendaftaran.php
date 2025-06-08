@@ -1,5 +1,5 @@
 <div x-data="appointmentForm()" x-init="init()" class="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-8">
-    <form action="<?= base_url("patient/appointment") ?>" method="post" class="space-y-8">
+    <form action="<?= base_url("pasien/appointment") ?>" method="post" class="space-y-8">
         <!-- Flash Messages -->
         <?php if (session()->has("success")): ?>
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
@@ -47,7 +47,7 @@
                 required x-model="selectedPackage" @change="updateDoctorsByPackage()">
                 <option value="">-- Pilih Paket --</option>
                 <template x-for="paket in filteredPackages" :key="paket.id_paket">
-                    <option :value="paket.id_paket" x-text="`${paket.nama_paket} (${paket.deskripsi}) - Rp${formatCurrency(paket.harga)}`"></option>
+                    <option :value="paket.id_paket" x-text="`${paket.nama_paket} - Rp${formatCurrency(paket.harga)}`"></option>
                 </template>
             </select>
             <template x-if="selectedPackageObj">

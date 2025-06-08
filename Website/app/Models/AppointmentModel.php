@@ -7,6 +7,7 @@ class AppointmentModel extends Model
     protected $table = "janji_temu";
     protected $primaryKey = "id_janji_temu";
     protected $allowedFields = [
+        "id_janji_temu",
         "nama_janji",
         "id_pasien",
         "tanggal_janji",
@@ -63,9 +64,9 @@ class AppointmentModel extends Model
             ->where("a.id_pasien", $patientId)
             ->where("a.status", "pending")
             ->orWhere("a.status", "confirmed")
-            ->where("a.TANGGAL_JANJI >=", date("Y-m-d"))
-            ->orderBy("a.TANGGAL_JANJI", "ASC")
-            ->orderBy("a.WAKTU_JANJI", "ASC");
+            ->where("a.tanggal_janji >=", date("Y-m-d"))
+            ->orderBy("a.tanggal_janji", "ASC")
+            ->orderBy("a.waktu_janji", "ASC");
 
         if (!is_null($limit)) {
             $query->limit($limit);
@@ -80,25 +81,30 @@ class AppointmentModel extends Model
     public function getAppointmentDetails($id)
     {
         $builder = $this->db
-            ->table("janji_temu a")
+            ->table('janji_temu a')
             ->select(
-                'a.*,
-                       p.nama_paket, p.harga, p.deskripsi as DESKRIPSI_PAKET,
-                       d.nama_dokter,
-                       s.nama_spesialisasi,
-                       diag.diagnosis, diag.REKOMENDASI, diag.TANGGAL_DIAGNOSIS,
-                       diag.HASIL_LAB, diag.TANGGAL_HASIL_LAB'
+                'a.*, 
+                 p.nama_paket, p.harga, p.deskripsi as deskripsi_paket, 
+                 d.nama_dokter, 
+                 s.nama_spesialisasi,
+                 transaksi.id_transaksi, transaksi.status_pembayaran, transaksi.doku_payment_url, transaksi.doku_expired_time,
+                 diag.id_diagnosis as diagnosis_id,
+                 diag.symptoms as diagnosis_symptoms, 
+                 diag.diagnosis_result as diagnosis_result, 
+                 diag.treatment_plan as diagnosis_treatment_plan,
+                 diag.notes as diagnosis_notes,
+                 diag.hasil_lab as diagnosis_hasil_lab, 
+                 diag.tanggal_hasil_lab as diagnosis_tanggal_hasil_lab,
+                 diag.created_at as diagnosis_created_at,
+                 diag.updated_at as diagnosis_updated_at'
             )
-            ->join("paket p", "p.id_paket = a.id_paket", "left")
-            ->join("dokter d", "d.id_dokter = a.id_dokter", "left")
-            ->join(
-                "spesialisasi s",
-                "s.id_spesialisasi = d.id_spesialisasi",
-                "left"
-            )
-            ->join("diagnosis diag", "diag.ID_JANJI = a.id_janji_temu", "left")
-            ->where("a.id_janji_temu", $id);
-
+            ->join('paket p', 'p.id_paket = a.id_paket', 'left')
+            ->join('dokter d', 'd.id_dokter = a.id_dokter', 'left')
+            ->join('spesialisasi s', 's.id_spesialisasi = d.id_spesialisasi', 'left')
+            ->join('transaksi', 'transaksi.id_janji_temu = a.id_janji_temu', 'left')
+            ->join('diagnosis diag', 'diag.id_janji_temu = a.id_janji_temu', 'left')
+            ->where('a.id_janji_temu', $id);
+    
         return $builder->get()->getRowArray();
     }
 
@@ -137,8 +143,8 @@ class AppointmentModel extends Model
         $conflictingAppointments = $this->db
             ->table("janji_temu")
             ->where("id_dokter", $doctorId)
-            ->where("TANGGAL_JANJI", $date)
-            ->where("WAKTU_JANJI", $time)
+            ->where("tanggal_janji", $date)
+            ->where("waktu_janji", $time)
             ->where("status !=", "cancelled") // Ignore cancelled appointments
             ->countAllResults();
 
@@ -155,15 +161,15 @@ class AppointmentModel extends Model
     {
         $result = $this->db
             ->table("janji_temu")
-            ->select("TANGGAL_JANJI")
+            ->select("tanggal_janji")
             ->where("id_pasien", $patientId)
             ->where("status", "completed")
-            ->orderBy("TANGGAL_JANJI", "DESC")
+            ->orderBy("tanggal_janji", "DESC")
             ->limit(1)
             ->get()
             ->getRowArray();
 
-        return $result ? $result["TANGGAL_JANJI"] : null;
+        return $result ? $result["tanggal_janji"] : null;
     }
 
     /**
@@ -194,8 +200,8 @@ class AppointmentModel extends Model
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
-            ->where("a.TANGGAL_JANJI", $date)
-            ->orderBy("a.WAKTU_JANJI", "ASC")
+            ->where("a.tanggal_janji", $date)
+            ->orderBy("a.waktu_janji", "ASC")
             ->get()
             ->getResultArray();
     }
@@ -214,9 +220,9 @@ class AppointmentModel extends Model
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
             ->where("a.status", "pending")
-            ->where("a.TANGGAL_JANJI >=", date("Y-m-d"))
-            ->orderBy("a.TANGGAL_JANJI", "ASC")
-            ->orderBy("a.WAKTU_JANJI", "ASC")
+            ->where("a.tanggal_janji >=", date("Y-m-d"))
+            ->orderBy("a.tanggal_janji", "ASC")
+            ->orderBy("a.waktu_janji", "ASC")
             ->get()
             ->getResultArray();
     }
@@ -235,8 +241,8 @@ class AppointmentModel extends Model
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
             ->where("a.status", $status)
-            ->orderBy("a.TANGGAL_JANJI", "DESC")
-            ->orderBy("a.WAKTU_JANJI", "ASC")
+            ->orderBy("a.tanggal_janji", "DESC")
+            ->orderBy("a.waktu_janji", "ASC")
             ->get()
             ->getResultArray();
     }
@@ -254,8 +260,8 @@ class AppointmentModel extends Model
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
-            ->orderBy("a.TANGGAL_JANJI", "DESC")
-            ->orderBy("a.WAKTU_JANJI", "ASC")
+            ->orderBy("a.tanggal_janji", "DESC")
+            ->orderBy("a.waktu_janji", "ASC")
             ->get()
             ->getResultArray();
     }
@@ -304,5 +310,124 @@ class AppointmentModel extends Model
             ->groupBy("a.id_janji_temu")
             ->get()
             ->getResultArray();
+    }
+
+    public function createAppointment($data, $request)
+    {
+        // Validation rules and messages
+        $validation = \Config\Services::validation();
+        $validation->setRules(
+            [
+                "nama_janji"      => "required|min_length[3]|max_length[255]|string",
+                "tanggal_janji"   => "required|valid_date",
+                "waktu_janji"     => "required|regex_match[/(0[89]|1[0-7]):[0-5][0-9]/]",
+                "paket_terpilih"  => "required|numeric|is_natural_no_zero",
+                "id_dokter"       => "required|min_length[1]|max_length[30]|alpha_numeric_punct",
+            ],
+            [
+                "nama_janji" => [
+                    "required" => "Nama janji harus diisi.",
+                    "min_length" => "Nama janji minimal 3 karakter.",
+                    "max_length" => "Nama janji maksimal 255 karakter.",
+                ],
+                "tanggal_janji" => [
+                    "required" => "Tanggal janji harus diisi.",
+                    "valid_date" => "Format tanggal tidak valid.",
+                ],
+                "waktu_janji" => [
+                    "required" => "Waktu janji harus diisi.",
+                    "regex_match" => "Waktu janji harus antara jam 08:00 - 17:00.",
+                ],
+                "paket_terpilih" => [
+                    "required" => "Paket harus dipilih.",
+                    "numeric" => "Paket tidak valid.",
+                    "is_natural_no_zero" => "Paket tidak valid.",
+                ],
+                "id_dokter" => [
+                    "required" => "Dokter harus dipilih.",
+                    "min_length" => "ID dokter tidak boleh kosong.",
+                    "max_length" => "ID dokter terlalu panjang.",
+                    "alpha_numeric_punct" => "ID dokter mengandung karakter tidak valid.",
+                ],
+            ]
+        );
+    
+        // If validation fails, return errors
+        if (!$validation->withRequest($request)->run()) {
+            return [
+                'success' => false,
+                'errors' => $validation->getErrors(),
+            ];
+        }
+    
+        // Sanitize and prepare data
+        $namaJanji = htmlspecialchars($request->getPost("nama_janji"), ENT_QUOTES, "UTF-8");
+        $tanggalJanji = $request->getPost("tanggal_janji");
+        $waktuJanji = $request->getPost("waktu_janji");
+        $dokterId = $request->getPost("id_dokter");
+        $paketId = (int) $request->getPost("paket_terpilih");
+        $pasienId = $data['id_pasien'] ?? null;
+        $userId = $data['user_id'] ?? $pasienId;
+    
+        if (!$pasienId) {
+            return [
+                'success' => false,
+                'errors' => ['id_pasien' => 'ID pasien tidak ditemukan.'],
+            ];
+        }
+    
+        $insertData = [
+            "nama_janji" => $namaJanji,
+            "id_pasien" => $pasienId,
+            "tanggal_janji" => $tanggalJanji,
+            "waktu_janji" => $waktuJanji,
+            "id_dokter" => $dokterId,
+            "id_paket" => $paketId,
+            "status" => "pending",
+            "created_by" => $userId,
+            "updated_by" => $userId,
+        ];
+    
+        // Doctor availability check
+        if (!$this->isDoctorAvailable($dokterId, $tanggalJanji, $waktuJanji)) {
+            return [
+                'success' => false,
+                'errors' => ['id_dokter' => "Dokter tidak tersedia pada waktu tersebut. Silakan pilih waktu lain."],
+            ];
+        }
+    
+        // Transaction & insert
+        $db = \Config\Database::connect();
+        $db->transStart();
+    
+        try {
+
+            // Generate id_janji_temu
+            $db->query("CALL mcu_app.GenerateIdJanjiTemu(@newId)");
+            $row = $db->query("SELECT @newId AS id_janji_temu")->getRowArray();
+            $id_janji_temu = $row['id_janji_temu'];
+            log_message('debug', 'Generated id_janji_temu: ' . $id_janji_temu);
+
+            $insertData['id_janji_temu'] = $id_janji_temu;
+
+            $this->insert($insertData);
+            $db->transComplete();
+    
+            if ($db->transStatus() === false) {
+                throw new \Exception("Database transaction failed.");
+            }
+    
+            return [
+                'success' => true,
+                'id_janji_temu' => $id_janji_temu,
+            ];
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message("error", "Error creating appointment: " . $e->getMessage());
+            return [
+                'success' => false,
+                'errors' => ['system' => $e->getMessage()],
+            ];
+        }
     }
 }

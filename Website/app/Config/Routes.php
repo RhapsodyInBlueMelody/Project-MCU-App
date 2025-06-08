@@ -82,11 +82,30 @@ $routes->group(
         );
         $routes->get("jadwal-pemeriksaan", "Pasien::jadwalPemeriksaan");
         $routes->get(
-            "riwayat-pemeriksaan/(:num)",
+            "riwayat-pemeriksaan/(:segment)",
             "Pasien::riwayatPemeriksaan/$1"
         );
     }
 );
+
+// Payment Routes (protected for pasien)
+$routes->group(
+    "payment",
+    ["namespace" => "App\Controllers", "filter" => "auth:pasien"],
+    function ($routes) {
+        // Checkout/payment creation for a transaction (invoke payment gateway)
+        $routes->get("checkout/(:num)", "Payment::checkout/$1");
+        $routes->post("checkout/(:num)", "Payment::checkout/$1");
+        // Check payment status via AJAX or link
+        $routes->get("status/(:num)", "Payment::checkStatus/$1");
+    }
+);
+
+// DOKU Payment Webhooks/Callbacks (unprotected, DOKU server must reach them)
+$routes->post('payment/callback', 'Payment::callback');
+$routes->post('payment/cancel', 'Payment::cancel');   // If you want to handle this
+$routes->get('payment/result', 'Payment::result');
+$routes->post('payment/result', 'Payment::result');   // Optional, for display only
 
 // pasien API Routes
 $routes->group(
