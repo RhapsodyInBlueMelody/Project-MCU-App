@@ -1,4 +1,6 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
 
 use CodeIgniter\Model;
 
@@ -20,24 +22,14 @@ class PaketModel extends Model
 
     public function getAllPackagesWithSpecialization()
     {
-        $result = $this->db
+        return $this->db
             ->table("paket")
-            ->select(
-                "paket.*, spesialisasi.nama_spesialisasi AS keahlian_dibutuhkan_text"
-            )
-            ->join(
-                "spesialisasi",
-                "paket.id_spesialisasi = spesialisasi.id_spesialisasi",
-                "left"
-            )
+            ->select("paket.id_paket, paket.nama_paket, paket.deskripsi, paket.harga, paket.id_spesialisasi, spesialisasi.nama_spesialisasi AS keahlian_dibutuhkan_text")
+            ->join("spesialisasi", "paket.id_spesialisasi = spesialisasi.id_spesialisasi", "left")
             ->get()
             ->getResultArray();
-
-        // Log the query for debugging
-         //log_message('debug', 'Package query: ' . $this->db->getLastQuery());
-
-        return $result;
     }
+
     public function findPackageByIdWithSpecialization($packageId)
     {
         return $this->db

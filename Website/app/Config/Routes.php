@@ -122,7 +122,6 @@ $routes->group(
     ["namespace" => "App\Controllers", "filter" => "auth:dokter"],
     function ($routes) {
         $routes->get("dashboard", "Dokter::dashboard");
-        $routes->get("appointments/(:segment)", "Dokter::appointments/$1");
         $routes->get("appointments", "Dokter::appointments");
         $routes->get("appointment/(:num)", "Dokter::appointmentDetail/$1");
         $routes->post(
@@ -139,6 +138,7 @@ $routes->group(
         $routes->get("schedule", "Dokter::mySchedule");
         $routes->get("profile", "Dokter::profile");
         $routes->post("update-profile", "Dokter::updateProfile");
+        $routes->get('schedule/api/(:segment)', 'JadwalDokterController::getScheduleApi/$1');
     }
 );
 
@@ -168,6 +168,7 @@ $routes->group(
         $routes->get("reports", "Admin::reports");
     }
 );
+
 
 // Utility/Testing Routes
 $routes->get("test-db", function () {

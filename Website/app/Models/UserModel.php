@@ -7,34 +7,41 @@ use CodeIgniter\Model;
 class UserModel extends Model
 {
     protected $table = "users";
-    protected $primaryKey = "user_id"; // Assuming your primary key is 'id', adjust if it's 'user_id'
+    protected $primaryKey = "user_id";
     protected $allowedFields = [
+        "user_id",
         "username",
         "email",
         "password",
         "role",
         "status",
-        "google_id", // Added google_id
+        "google_id",
+        "updated_by",
+        "created_by"
     ];
     protected $useTimestamps = true;
     protected $createdField = "created_at";
     protected $updatedField = "updated_at";
-
 
     public function getUserByEmailOrUsername($login, $role)
     {
         return $this->where("role", $role)
             ->where("status", 1)
             ->groupStart()
-                ->where("email", $login)
-                ->orWhere("username", $login)
+            ->where("email", $login)
+            ->orWhere("username", $login)
             ->groupEnd()
             ->first();
     }
 
-    public function getUserByGoogleId(string $googleId)
+    public function getUserByGoogleId($googleId)
     {
         return $this->where("google_id", $googleId)->first();
+    }
+
+    public function updateGoogleId($userId, $googleId)
+    {
+        return $this->update($userId, ["google_id" => $googleId]);
     }
 
     public function registerWithGoogle(array $userData)
@@ -44,20 +51,15 @@ class UserModel extends Model
             ->first();
 
         if ($existingUser) {
-            // If a user with the same email or Google ID exists, you might want to:
-            // 1. Link the Google ID to the existing account (if google_id is null for that user).
-            // 2. Return the existing user.
-            // 3. Handle the conflict as per your application's logic.
-            return $existingUser; // For now, let's just return the existing user
+            return $existingUser;
         }
 
         $data = [
-            "username" => $userData["email"], // You might want to generate a unique username
+            "username" => $userData["email"],
             "email" => $userData["email"],
             "google_id" => $userData["google_id"],
-            "role" => $userData["role"], // Determine the role based on your logic
+            "role" => $userData["role"],
             "status" => 1,
-            // Password can be null or a randomly generated string for Google users
             "password" => null,
         ];
 
@@ -67,19 +69,36 @@ class UserModel extends Model
 
     public function authenticateDoctor($login, $password)
     {
-        return $this->where("role", "dokter")
-            ->where("status", 1)
+        $user = $this->where("role", "dokter")
+            ->where("status", "active")
             ->groupStart()
-                ->where("email", $login)
-                ->orWhere("username", $login)
+            ->where("email", $login)
+            ->orWhere("username", $login)
             ->groupEnd()
             ->first();
 
-        if(!$user || !password_verify($password, $user['password'])) {
+
+        if (!$user || !password_verify($password, $user['password'])) {
             return null;
         }
 
         return $user;
-        
+    }
+
+    /**
+     * Generate a new user ID using stored procedure
+     */
+    public function generateUserId(): string
+    {
+        $db = \Config\Database::connect();
+        $db->query("CALL GenerateUserId(@generated_user_id)");
+        $query = $db->query("SELECT @generated_user_id AS user_id");
+        $result = $query->getRow();
+
+        if (!$result || !$result->user_id) {
+            throw new \Exception('User ID generation failed.');
+        }
+
+        return $result->user_id;
     }
 }

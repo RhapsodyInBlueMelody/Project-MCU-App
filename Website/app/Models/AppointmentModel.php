@@ -1,4 +1,6 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
 
 use CodeIgniter\Model;
 
@@ -24,20 +26,14 @@ class AppointmentModel extends Model
     protected $createdField = "created_at";
     protected $updatedField = "updated_at";
 
-    /**
-     * Get all appointments for a specific patient
-     */
+    // Get all appointments for a specific patient
     public function getPasienAppointments($pasienId)
     {
         return $this->db
             ->table("janji_temu a")
             ->select("a.*, d.nama_dokter, s.nama_spesialisasi, p.nama_paket")
             ->join("dokter d", "d.id_dokter = a.id_dokter", "left")
-            ->join(
-                "spesialisasi s",
-                "s.id_spesialisasi = d.id_spesialisasi",
-                "left"
-            )
+            ->join("spesialisasi s", "s.id_spesialisasi = d.id_spesialisasi", "left")
             ->join("paket p", "p.id_paket = a.id_paket", "left")
             ->where("a.id_pasien", $pasienId)
             ->orderBy("a.tanggal_janji", "DESC")
@@ -46,24 +42,20 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
-    /**
-     * Get upcoming appointments for a specific patient with a limit
-     */
+    // Get upcoming appointments for a specific patient with a limit
     public function getUpcomingAppointments($patientId, $limit = null)
     {
         $query = $this->db
             ->table("janji_temu a")
             ->select("a.*, d.nama_dokter, s.nama_spesialisasi, p.nama_paket")
             ->join("dokter d", "d.id_dokter = a.id_dokter", "left")
-            ->join(
-                "spesialisasi s",
-                "s.id_spesialisasi = d.id_spesialisasi",
-                "left"
-            )
+            ->join("spesialisasi s", "s.id_spesialisasi = d.id_spesialisasi", "left")
             ->join("paket p", "p.id_paket = a.id_paket", "left")
             ->where("a.id_pasien", $patientId)
+            ->groupStart()
             ->where("a.status", "pending")
             ->orWhere("a.status", "confirmed")
+            ->groupEnd()
             ->where("a.tanggal_janji >=", date("Y-m-d"))
             ->orderBy("a.tanggal_janji", "ASC")
             ->orderBy("a.waktu_janji", "ASC");
@@ -75,9 +67,7 @@ class AppointmentModel extends Model
         return $query->get()->getResultArray();
     }
 
-    /**
-     * Get appointment details by ID
-     */
+    // Get appointment details by ID, with lab tests for this appointment
     public function getAppointmentDetails($id)
     {
         $builder = $this->db
@@ -104,99 +94,24 @@ class AppointmentModel extends Model
             ->join('transaksi', 'transaksi.id_janji_temu = a.id_janji_temu', 'left')
             ->join('diagnosis diag', 'diag.id_janji_temu = a.id_janji_temu', 'left')
             ->where('a.id_janji_temu', $id);
-    
-        return $builder->get()->getRowArray();
-    }
 
-    public function saveDiagnosis($data)
-    {
-        $db = \Config\Database::connect();
-        $builder = $db->table("diagnosis");
+        $appointment = $builder->get()->getRowArray();
 
-        return $builder->insert($data);
-    }
-
-    public function updateDiagnosis($id, $data)
-    {
-        $db = \Config\Database::connect();
-        $builder = $db->table("diagnosis");
-
-        return $builder->where("id_diagnosis", $id)->update($data);
-    }
-    /**
-     * Check if a doctor is available at a specific date and time
-     *
-     * @param int $doctorId The doctor ID
-     * @param string $date The appointment date (YYYY-MM-DD)
-     * @param string $time The appointment time (HH:MM:SS)
-     * @return bool True if doctor is available, false otherwise
-     */
-    public function isDoctorAvailable($doctorId, $date, $time)
-    {
-        // Check doctor's working hours (based on your business rules)
-        $hour = (int) substr($time, 0, 2);
-        if ($hour < 8 || $hour >= 17) {
-            return false; // Outside working hours
+        // Fetch all lab tests for this appointment
+        if ($appointment) {
+            $labTestModel = new \App\Models\LabTestModel();
+            $appointment['lab_tests'] = $labTestModel->getTestsByAppointment($id);
         }
 
-        // Check existing appointments
-        $conflictingAppointments = $this->db
-            ->table("janji_temu")
-            ->where("id_dokter", $doctorId)
-            ->where("tanggal_janji", $date)
-            ->where("waktu_janji", $time)
-            ->where("status !=", "cancelled") // Ignore cancelled appointments
-            ->countAllResults();
-
-        return $conflictingAppointments === 0;
+        return $appointment;
     }
 
-    /**
-     * Get the last completed appointment date for a patient
-     *
-     * @param int $patientId
-     * @return string|null Date of last completed appointment or null
-     */
-    public function getLastCompletedAppointmentDate($patientId)
-    {
-        $result = $this->db
-            ->table("janji_temu")
-            ->select("tanggal_janji")
-            ->where("id_pasien", $patientId)
-            ->where("status", "completed")
-            ->orderBy("tanggal_janji", "DESC")
-            ->limit(1)
-            ->get()
-            ->getRowArray();
-
-        return $result ? $result["tanggal_janji"] : null;
-    }
-
-    /**
-     * Get the total number of completed appointments for a patient
-     *
-     * @param int $patientId
-     * @return int Count of completed appointments
-     */
-    public function getTotalCompletedAppointments($patientId)
-    {
-        return $this->db
-            ->table("janji_temu")
-            ->where("id_pasien", $patientId)
-            ->where("status", "completed")
-            ->countAllResults();
-    }
-
-    /**
-     * Get all appointments for a specific doctor on a specific date
-     */
+    // Get all appointments for a specific doctor on a specific date
     public function getDoctorAppointmentsByDate($doctorId, $date)
     {
         return $this->db
             ->table("janji_temu a")
-            ->select(
-                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
-            )
+            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
@@ -206,16 +121,28 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
-    /**
-     * Get pending appointments for a specific doctor
-     */
+    public function getDoctorAppointmentsByMonth($doctorId, $year, $month)
+    {
+        return $this->db
+            ->table("janji_temu a")
+            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
+            ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
+            ->join("paket pa", "pa.id_paket = a.id_paket", "left")
+            ->where("a.id_dokter", $doctorId)
+            ->where("YEAR(a.tanggal_janji)", $year)
+            ->where("MONTH(a.tanggal_janji)", $month)
+            ->orderBy("a.tanggal_janji", "ASC")
+            ->orderBy("a.waktu_janji", "ASC")
+            ->get()
+            ->getResultArray();
+    }
+
+    // Get pending appointments for a specific doctor
     public function getDoctorPendingAppointments($doctorId)
     {
         return $this->db
             ->table("janji_temu a")
-            ->select(
-                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
-            )
+            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
@@ -227,16 +154,12 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
-    /**
-     * Get appointments for a specific doctor by status
-     */
+    // Get appointments for a specific doctor by status
     public function getDoctorAppointmentsByStatus($doctorId, $status)
     {
         return $this->db
             ->table("janji_temu a")
-            ->select(
-                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
-            )
+            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
@@ -247,16 +170,12 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
-    /**
-     * Get all appointments for a specific doctor
-     */
+    // Get all appointments for a specific doctor
     public function getDoctorAllAppointments($doctorId)
     {
         return $this->db
             ->table("janji_temu a")
-            ->select(
-                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
-            )
+            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
@@ -266,44 +185,31 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
-    /**
-     * Get patients waiting for diagnosis
-     */
+    // Get patients waiting for diagnosis (no diagnosis record)
     public function getPatientsWaitingFordiagnosis($doctorId)
     {
         return $this->db
             ->table("janji_temu a")
-            ->select(
-                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
-            )
+            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
+            ->join("diagnosis d", "d.id_janji_temu = a.id_janji_temu", "left")
             ->where("a.id_dokter", $doctorId)
             ->where("a.status", "confirmed")
-            ->where(
-                "NOT EXISTS (SELECT 1 FROM diagnosis d WHERE d.id_janji_temu = a.id_janji_temu)"
-            )
+            ->where("d.id_diagnosis IS NULL")
             ->get()
             ->getResultArray();
     }
 
-    /**
-     * Get patients with new lab results
-     */
+    // Get patients with new lab results for the doctor
     public function getPatientsWithNewLabResults($doctorId)
     {
         return $this->db
             ->table("janji_temu a")
-            ->select(
-                "a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket"
-            )
+            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
-            ->join(
-                "Lab_Orders lo",
-                "lo.id_janji_temu = a.id_janji_temu",
-                "left"
-            )
+            ->join("test_lab lo", "lo.id_janji_temu = a.id_janji_temu", "left")
             ->where("a.id_dokter", $doctorId)
             ->where("a.status", "awaiting_lab_results")
             ->where("lo.status", "completed")
@@ -312,9 +218,9 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
+    // Create a new appointment
     public function createAppointment($data, $request)
     {
-        // Validation rules and messages
         $validation = \Config\Services::validation();
         $validation->setRules(
             [
@@ -351,16 +257,14 @@ class AppointmentModel extends Model
                 ],
             ]
         );
-    
-        // If validation fails, return errors
+
         if (!$validation->withRequest($request)->run()) {
             return [
                 'success' => false,
                 'errors' => $validation->getErrors(),
             ];
         }
-    
-        // Sanitize and prepare data
+
         $namaJanji = htmlspecialchars($request->getPost("nama_janji"), ENT_QUOTES, "UTF-8");
         $tanggalJanji = $request->getPost("tanggal_janji");
         $waktuJanji = $request->getPost("waktu_janji");
@@ -368,14 +272,14 @@ class AppointmentModel extends Model
         $paketId = (int) $request->getPost("paket_terpilih");
         $pasienId = $data['id_pasien'] ?? null;
         $userId = $data['user_id'] ?? $pasienId;
-    
+
         if (!$pasienId) {
             return [
                 'success' => false,
                 'errors' => ['id_pasien' => 'ID pasien tidak ditemukan.'],
             ];
         }
-    
+
         $insertData = [
             "nama_janji" => $namaJanji,
             "id_pasien" => $pasienId,
@@ -387,7 +291,7 @@ class AppointmentModel extends Model
             "created_by" => $userId,
             "updated_by" => $userId,
         ];
-    
+
         // Doctor availability check
         if (!$this->isDoctorAvailable($dokterId, $tanggalJanji, $waktuJanji)) {
             return [
@@ -395,39 +299,109 @@ class AppointmentModel extends Model
                 'errors' => ['id_dokter' => "Dokter tidak tersedia pada waktu tersebut. Silakan pilih waktu lain."],
             ];
         }
-    
-        // Transaction & insert
+
         $db = \Config\Database::connect();
         $db->transStart();
-    
-        try {
 
-            // Generate id_janji_temu
+        try {
             $db->query("CALL mcu_app.GenerateIdJanjiTemu(@newId)");
             $row = $db->query("SELECT @newId AS id_janji_temu")->getRowArray();
             $id_janji_temu = $row['id_janji_temu'];
-            log_message('debug', 'Generated id_janji_temu: ' . $id_janji_temu);
-
             $insertData['id_janji_temu'] = $id_janji_temu;
 
             $this->insert($insertData);
             $db->transComplete();
-    
+
             if ($db->transStatus() === false) {
                 throw new \Exception("Database transaction failed.");
             }
-    
+
             return [
                 'success' => true,
                 'id_janji_temu' => $id_janji_temu,
             ];
         } catch (\Exception $e) {
             $db->transRollback();
-            log_message("error", "Error creating appointment: " . $e->getMessage());
             return [
                 'success' => false,
                 'errors' => ['system' => $e->getMessage()],
             ];
         }
+    }
+
+    // Check if a doctor is available at a specific date and time
+    public function isDoctorAvailable($doctorId, $date, $time)
+    {
+        $hour = (int) substr($time, 0, 2);
+        if ($hour < 8 || $hour >= 17) {
+            return false;
+        }
+
+        $conflictingAppointments = $this->db
+            ->table("janji_temu")
+            ->where("id_dokter", $doctorId)
+            ->where("tanggal_janji", $date)
+            ->where("waktu_janji", $time)
+            ->where("status !=", "cancelled")
+            ->countAllResults();
+
+        return $conflictingAppointments === 0;
+    }
+
+    // Get the last completed appointment date for a patient
+    public function getLastCompletedAppointmentDate($patientId)
+    {
+        $result = $this->db
+            ->table("janji_temu")
+            ->select("tanggal_janji")
+            ->where("id_pasien", $patientId)
+            ->where("status", "completed")
+            ->orderBy("tanggal_janji", "DESC")
+            ->limit(1)
+            ->get()
+            ->getRowArray();
+
+        return $result ? $result["tanggal_janji"] : null;
+    }
+
+    // Get the total number of completed appointments for a patient
+    public function getTotalCompletedAppointments($patientId)
+    {
+        return $this->db
+            ->table("janji_temu")
+            ->where("id_pasien", $patientId)
+            ->where("status", "completed")
+            ->countAllResults();
+    }
+
+    // Utility: Get all lab tests for an appointment (uses LabTestModel)
+    public function getLabTests($id_janji_temu)
+    {
+        $labTestModel = new \App\Models\LabTestModel();
+        return $labTestModel->getTestsByAppointment($id_janji_temu);
+    }
+
+    // Utility: Get all lab tests for a doctor
+    public function getAllLabTestsByDoctor($doctorId)
+    {
+        return $this->db
+            ->table('test_lab tl')
+            ->select('tl.*, a.id_pasien, a.tanggal_janji, a.id_dokter')
+            ->join('janji_temu a', 'a.id_janji_temu = tl.id_janji_temu')
+            ->where('a.id_dokter', $doctorId)
+            ->get()
+            ->getResultArray();
+    }
+
+    // Utility: Get all lab tests for a patient
+    public function getAllLabTestsByPatient($pasienId)
+    {
+        return $this->db
+            ->table('test_lab tl')
+            ->select('tl.*, a.id_dokter, a.tanggal_janji, a.id_pasien')
+            ->join('janji_temu a', 'a.id_janji_temu = tl.id_janji_temu')
+            ->where('a.id_pasien', $pasienId)
+            ->get()
+            ->getResultArray();
     }
 }

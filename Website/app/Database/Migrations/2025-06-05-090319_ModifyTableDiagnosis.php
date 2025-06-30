@@ -18,7 +18,7 @@ class ModifyDiagnosisTable extends Migration
 
         // 2. Rename `id` to `id_diagnosis`
         $db->query('ALTER TABLE diagnosis CHANGE id id_diagnosis VARCHAR(30) NOT NULL ;');
-        $db->query('ALTER TABLE petugas_lab CHANGE id_petugas_lab VARCHAR(30) NOT NULL ;');
+        $db->query('ALTER TABLE petugas_lab CHANGE id_petugas_lab id_petugas_lab VARCHAR(30) NOT NULL;');
 
         // 3. Modify id_janji_temu type if needed
         $db->query('ALTER TABLE diagnosis MODIFY COLUMN id_janji_temu VARCHAR(30) NOT NULL;');

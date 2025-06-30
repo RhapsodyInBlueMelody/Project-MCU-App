@@ -3,11 +3,10 @@
 namespace App\Controllers;
 
 use App\Models\AppointmentModel;
-use App\Models\pasienProfileModel;
 use App\Models\PaketModel;
+use App\Models\TransaksiModel;
 use App\Models\DokterModel;
 use CodeIgniter\API\ResponseTrait;
-use CodeIgniter\HTTP\RequestInterface;
 
 
 
@@ -16,6 +15,10 @@ class Pasien extends AuthenticatedController
     use ResponseTrait;
 
     protected $pasienId;
+    protected $dokterModel;
+    protected $paketModel;
+    protected $transaksiModel;
+    protected $appointmentModel;
     protected $userId;
 
     public function __construct()
@@ -23,6 +26,10 @@ class Pasien extends AuthenticatedController
         parent::__construct("pasien", "auth/pasien/login");
 
         // Get common data for all methods
+        $this->dokterModel = new DokterModel;
+        $this->paketModel = new PaketModel;
+        $this->appointmentModel = new AppointmentModel;
+        $this->transaksiModel = new TransaksiModel;
         $this->pasienId = session()->get("id_pasien") ?? null;
         $this->userId = session()->get("user_id") ?? null;
 
@@ -38,11 +45,10 @@ class Pasien extends AuthenticatedController
 
     public function dashboard()
     {
-        $appointmentModel = new AppointmentModel();
 
         // Get upcoming appointments for dashboard
         $data["upcoming_appointments"] = !empty($this->pasienId)
-            ? $appointmentModel->getUpcomingAppointments($this->pasienId, 5) // Limit to 5
+            ? $this->appointmentModel->getUpcomingAppointments($this->pasienId, 5) // Limit to 5
             : [];
 
         $data["title"] = "pasien Dashboard";
@@ -64,60 +70,39 @@ class Pasien extends AuthenticatedController
 
     public function appointment()
     {
-        $dokterModel = new DokterModel();
-        $paketModel = new PaketModel();
-    
         // Only keep the necessary fields for doctors
-        $doctors = array_map(function ($d) {
-            return [
-                'id_dokter' => $d['id_dokter'],
-                'nama_dokter' => $d['nama_dokter'],
-                'id_spesialisasi' => $d['id_spesialisasi'],
-                'nama_spesialisasi' => $d['nama_spesialisasi'],
-            ];
-        }, $dokterModel->getAllDoctorsWithSpesialisasi());
-    
+        $doctors = $this->dokterModel->getAllDoctorsWithSpesialisasi();
+
         // Only keep needed fields for packages
-        $packages = array_map(function ($p) {
-            return [
-                'id_paket' => $p['id_paket'],
-                'nama_paket' => $p['nama_paket'],
-                'deskripsi' => $p['deskripsi'],
-                'harga' => $p['harga'],
-                'id_spesialisasi' => $p['id_spesialisasi'],
-                'keahlian_dibutuhkan_text' => $p['keahlian_dibutuhkan_text']
-            ];
-        }, $paketModel->getAllPackagesWithSpecialization());
-    
+        $packages = $this->paketModel->getAllPackagesWithSpecialization();
+
         // Add CSRF protection for form
         $data["csrf_token"] = csrf_hash();
         $data["doctors"] = $doctors;
         $data["packages"] = $packages;
         $data["title"] = "Pendaftaran";
-    
+
         // Add scripts for appointment form
         $data["scripts"] = ["assets/js/appointment.js"];
-    
+
         return view("templates/pasien/header", $data) .
-            view("pasien/pendaftaran", $data) .
+            view("pasien/pendaftaran_janji_temu", $data) .
             view("templates/pasien/footer");
     }
 
     public function saveAppointment()
     {
-        $appointmentModel = new \App\Models\AppointmentModel();
-        $transaksiModel = new \App\Models\TransaksiModel();
-    
+
         // Get pasien ID from session
         $pasienId = session()->get('id_pasien');
         $userId = session()->get('user_id');
-    
+
         // Step 1: Create the appointment
-        $result = $appointmentModel->createAppointment(
+        $result = $this->appointmentModel->createAppointment(
             ['id_pasien' => $pasienId, 'user_id' => $userId],
             $this->request
         );
-    
+
         if (!$result['success']) {
             $errorMsg = is_array($result['errors'])
                 ? implode("<br>", $result['errors'])
@@ -127,13 +112,12 @@ class Pasien extends AuthenticatedController
                 ->with("error", $errorMsg)
                 ->withInput();
         }
-    
+
         $id_janji_temu = $result['id_janji_temu'];
-    
+
         $id_paket = $this->request->getPost('paket_terpilih');
-        $packageModel = new \App\Models\PaketModel();
-        $paket = $packageModel->find($id_paket);
-    
+        $paket = $this->paketModel->find($id_paket);
+
         $transaksiData = [
             'id_janji_temu'     => $id_janji_temu,
             'id_pasien'         => $pasienId,
@@ -144,14 +128,14 @@ class Pasien extends AuthenticatedController
             'created_by'        => $userId,
             'created_at'        => date('Y-m-d H:i:s')
         ];
-        $transaksiModel->insert($transaksiData);
-        $id_transaksi = $transaksiModel->getInsertID();
-    
+        $this->transaksiModel->insert($transaksiData);
+        $id_transaksi = $this->transaksiModel->getInsertID();
+
         $this->logActivity(
             "create_appointment",
             "Created new appointment with ID: $id_janji_temu and transaction ID: $id_transaksi"
         );
-    
+
         return redirect()
             ->to("/pasien/jadwal-pemeriksaan")
             ->with(
@@ -166,10 +150,9 @@ class Pasien extends AuthenticatedController
         $pasienId = session()->get('id_pasien');
 
         // Create model instance
-        $appointmentModel = new AppointmentModel();
 
         // Get all appointments for this pasien
-        $appointments = $appointmentModel->getPasienAppointments($pasienId);
+        $appointments = $this->appointmentModel->getPasienAppointments($pasienId);
 
         // Group appointments by status for easier filtering
         $data["upcoming"] = array_filter($appointments, function ($appt) {
@@ -201,8 +184,7 @@ class Pasien extends AuthenticatedController
                 ->with("error", "ID janji temu diperlukan");
         }
 
-        $appointmentModel = new AppointmentModel();
-        $appointment = $appointmentModel->find($id);
+        $appointment = $this->appointmentModel->find($id);
 
         if (!$appointment) {
             return redirect()
@@ -238,7 +220,7 @@ class Pasien extends AuthenticatedController
         ];
 
         try {
-            $appointmentModel->update($id, $data);
+            $this->appointmentModel->update($id, $data);
 
             // Log the activity
             $this->logActivity(
@@ -309,7 +291,7 @@ class Pasien extends AuthenticatedController
         }
 
         // Get pasien ID
-        $pasienId = $this->patientId ?? 1;
+        $pasienId = $this->pasienId ?? 1;
 
         // Get appointment model
         $appointmentModel = new AppointmentModel();

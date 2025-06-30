@@ -1,4 +1,6 @@
-<?php namespace App\Controllers;
+<?php
+
+namespace App\Controllers;
 
 use App\Models\UserModel;
 use App\Models\PasienModel;
@@ -106,7 +108,6 @@ class AuthController extends BaseController
      */
     public function authenticate(): RedirectResponse
     {
-
         $username = $this->request->getPost("username");
         $password = $this->request->getPost("password");
         $role = $this->request->getPost("role");
@@ -127,17 +128,11 @@ class AuthController extends BaseController
 
         switch ($role) {
             case "pasien":
-                $authenticated = $this->authenticatePasien(
-                    $username,
-                    $password
-                );
+                $authenticated = $this->authenticatePasien($username, $password);
                 $redirectUrl = "/pasien/dashboard";
                 break;
             case "dokter":
-                $authenticated = $this->authenticateDoctor(
-                    $username,
-                    $password
-                );
+                $authenticated = $this->authenticateDoctor($username, $password);
                 $redirectUrl = "/dokter/dashboard";
                 break;
             case "admin":
@@ -152,20 +147,20 @@ class AuthController extends BaseController
 
         if ($authenticated) {
             // Log successful login
-            log_message(
-                "info",
-                "User '{$username}' successfully logged in as {$role}"
-            );
+            log_message("info", "User '{$username}' successfully logged in as {$role}");
             return redirect()->to($redirectUrl);
         } else {
+            // Only set a generic error if a specific error wasn't already set
+            if (!session()->getFlashdata("error")) {
+                session()->setFlashdata("error", "Invalid username or password.");
+            }
             // Log failed login attempt
             log_message(
                 "warning",
                 "Failed login attempt for user '{$username}' as {$role}"
             );
             return redirect()
-                ->to("auth/{$role}/login")
-                ->with("error", "Invalid username or password.");
+                ->to("auth/{$role}/login");
         }
     }
 
@@ -223,6 +218,10 @@ class AuthController extends BaseController
         $user = $this->userModel->authenticateDoctor($username, $password);
 
         if (!$user) {
+            // Only set error if not already set (e.g., by password check inside model)
+            if (!session()->getFlashdata('error')) {
+                session()->setFlashdata("error", "Paswword atau Username Salah.");
+            }
             return false;
         }
 
@@ -230,15 +229,14 @@ class AuthController extends BaseController
 
         if (isset($doctorProfile["error"])) {
             if ($doctorProfile["error"] === "not_found") {
-                $statusMessage = "Doctor profile not found.";
+                $statusMessage = "Akun Tidak Ditemukan.";
             } elseif ($doctorProfile["error"] === "not_verified") {
-                $statusMessage = "Your account is pending verification.";
+                $statusMessage = "Akunmu Sedang Menunggu Verifikasi.";
             } elseif ($doctorProfile["error"] === "rejected") {
-                $statusMessage = "Your account verification was rejected. Reason: " . ($doctorProfile["verification_notes"] ?? "No reason provided.");
+                $statusMessage = "Verifikasi Akun Anda Tertolak. Alasan: " . ($doctorProfile["verification_notes"] ?? "No reason provided.");
             } else {
                 $statusMessage = "An unexpected error occurred while fetching your profile.";
             }
-
             session()->setFlashdata("error", $statusMessage);
             return false;
         }
@@ -256,6 +254,7 @@ class AuthController extends BaseController
         ]);
         return true;
     }
+
 
     /**
      * Admin authentication method
@@ -315,11 +314,11 @@ class AuthController extends BaseController
     public function registerpasien()
     {
         $data = [
-                "title" => "pasien Register",
-                "google_data" => [
-                    "intended_role" => "pasien"
-                ]
-            ];
+            "title" => "pasien Register",
+            "google_data" => [
+                "intended_role" => "pasien"
+            ]
+        ];
         return view("auth/register/pasien", $data);
     }
 
@@ -340,19 +339,17 @@ class AuthController extends BaseController
      */
     public function saveDoctorRegistration()
     {
-
         // Validate input
         $validation = \Config\Services::validation();
         $validation->setRules([
             "nama_dokter" => "required|min_length[3]|max_length[255]",
-            "email" => "required|valid_email|is_unique[Users.email]",
-            "username" =>
-                "required|alpha_numeric_space|min_length[3]|is_unique[Users.username]",
+            "email" => "required|valid_email|is_unique[users.email]",
+            "username" => "required|alpha_numeric_space|min_length[3]|is_unique[users.username]",
             "password" => "required|min_length[8]|matches[password_confirm]",
             "password_confirm" => "required",
             "no_telp_dokter" => "required|numeric|min_length[10]",
             "id_spesialisasi" => "required|numeric",
-            "no_lisensi" => "required|is_unique[Dokter.NO_LISENSI]",
+            "no_lisensi" => "required|is_unique[dokter.no_lisensi]",
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -362,83 +359,33 @@ class AuthController extends BaseController
                 ->with("error", implode("<br>", $validation->getErrors()));
         }
 
-        // Start transaction
-        $db = \Config\Database::connect();
-        $db->transStart();
+        // Collect registration data
+        $registrationData = [
+            'username' => $this->request->getPost("username"),
+            'email' => $this->request->getPost("email"),
+            'password' => $this->request->getPost("password"),
+            'nama_dokter' => $this->request->getPost("nama_dokter"),
+            'id_spesialisasi' => $this->request->getPost("id_spesialisasi"),
+            'no_telp_dokter' => $this->request->getPost("no_telp_dokter"),
+            'no_lisensi' => $this->request->getPost("no_lisensi"),
+        ];
 
         try {
-            // Create user account with sanitized inputs
-            $userData = [
-                "username" => htmlspecialchars(
-                    $this->request->getPost("username"),
-                    ENT_QUOTES,
-                    "UTF-8"
-                ),
-                "email" => filter_var(
-                    $this->request->getPost("email"),
-                    FILTER_SANITIZE_EMAIL
-                ),
-                "password" => password_hash(
-                    $this->request->getPost("password"),
-                    PASSWORD_DEFAULT
-                ),
-                "role" => "doctor",
-                "is_active" => 1,
-                "created_at" => date("Y-m-d H:i:s"),
-            ];
+            // Use DokterModel to handle the complete registration process
+            $result = $this->dokterModel->createDoctorWithProfile($registrationData);
 
-            $userId = $this->userModel->insert($userData);
-
-            // Create doctor profile
-            $doctorData = [
-                "user_id" => $userId,
-                "nama_dokter" => htmlspecialchars(
-                    $this->request->getPost("nama_dokter"),
-                    ENT_QUOTES,
-                    "UTF-8"
-                ),
-                "id_spesialisasi" => (int) $this->request->getPost(
-                    "id_spesialisasi"
-                ),
-                "NO_TELP_DOKTER" => htmlspecialchars(
-                    $this->request->getPost("no_telp_dokter"),
-                    ENT_QUOTES,
-                    "UTF-8"
-                ),
-                "NO_LISENSI" => htmlspecialchars(
-                    $this->request->getPost("no_lisensi"),
-                    ENT_QUOTES,
-                    "UTF-8"
-                ),
-                "is_verified" => 0,
-                "verification_status" => "pending",
-                "created_by" => $userId,
-                "updated_by" => $userId,
-            ];
-
-            $this->dokterModel->insert($doctorData);
-
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                throw new \Exception("Database transaction failed");
-            }
-
-            // Send verification email if needed (implement in production)
-            // $this->sendVerificationEmail($userData['email']);
+            // Optional: Send verification email
+            // $this->sendVerificationEmail($registrationData['email']);
 
             return redirect()
-                ->to("auth/doctor/login")
+                ->to("auth/dokter/login")
                 ->with(
                     "success",
                     "Registration successful! Your account is pending verification. We will contact you via email once your account has been verified."
                 );
         } catch (\Exception $e) {
-            $db->transRollback();
-            log_message(
-                "error",
-                "Doctor registration failed: " . $e->getMessage()
-            );
+            log_message("error", "Doctor registration failed: " . $e->getMessage());
+
             return redirect()
                 ->back()
                 ->withInput()
@@ -454,23 +401,41 @@ class AuthController extends BaseController
      */
     public function googleLogin($role = "pasien")
     {
+        // Map roles to actual routes
+        $roleRoutes = [
+            "pasien" => "auth/pasien/login",
+            "dokter" => "auth/dokter/login",
+            "admin" => "auth/admin/login"
+        ];
+
         // Validate role
-        if (!in_array($role, ["pasien", "doctor", "admin"])) {
+        if (!array_key_exists($role, $roleRoutes)) {
             return redirect()
-                ->to("auth/login")
+                ->to("auth/pasien/login") // Default fallback
                 ->with("error", "Invalid role specified for Google login.");
         }
 
-        // Store intended role in session
-        $this->session->set("intended_role", $role);
+        // Store the login route for potential use later (optional)
+        $loginRoute = $roleRoutes[$role];
 
-        // Set the redirect URI based on role
-        $redirectUri = base_url("auth/google/callback/{$role}");
-        $this->client->setRedirectUri($redirectUri);
+        try {
+            // Store intended role in session
+            $this->session->set("intended_role", $role);
 
-        // Generate the authorization URL and redirect
-        $authUrl = $this->client->createAuthUrl();
-        return redirect()->to($authUrl);
+            // Set the redirect URI based on role
+            $redirectUri = base_url("auth/google/callback/{$role}");
+            $this->client->setRedirectUri($redirectUri);
+
+            // Generate the authorization URL and redirect
+            $authUrl = $this->client->createAuthUrl();
+            return redirect()->to($authUrl);
+        } catch (\Exception $e) {
+            log_message("error", "Google OAuth error: " . $e->getMessage());
+
+            return redirect()
+                ->to($loginRoute)
+                ->with("error", "Unable to connect to Google. Please try again or use regular login.");
+        }
     }
 
     /**
@@ -479,9 +444,8 @@ class AuthController extends BaseController
     public function googleCallback($role = "pasien")
     {
         // Validate role
-        if (!in_array($role, ["pasien", "doctor", "admin"])) {
-            return redirect()
-                ->to("auth/login")
+        if (!in_array($role, ["pasien", "dokter", "admin"])) {
+            return redirect()->to("auth/login")
                 ->with("error", "Invalid role specified for Google login.");
         }
 
@@ -493,12 +457,8 @@ class AuthController extends BaseController
 
         if (!$code) {
             log_message("error", "No code received from Google");
-            return redirect()
-                ->to("auth/{$role}/login")
-                ->with(
-                    "error",
-                    "Google Sign-In failed: No authorization code received."
-                );
+            return redirect()->to("auth/{$role}/login")
+                ->with("error", "Google Sign-In failed: No authorization code received.");
         }
 
         try {
@@ -507,18 +467,14 @@ class AuthController extends BaseController
 
             if (isset($token["error"])) {
                 log_message("error", "Google token error: " . $token["error"]);
-                return redirect()
-                    ->to("auth/{$role}/login")
-                    ->with(
-                        "error",
-                        "Google authentication error: " . $token["error"]
-                    );
+                return redirect()->to("auth/{$role}/login")
+                    ->with("error", "Google authentication error: " . $token["error"]);
             }
 
             $this->client->setAccessToken($token);
 
             // Get user profile information
-            $googleService = new Oauth2($this->client);
+            $googleService = new \Google_Service_Oauth2($this->client);
             $userInfo = $googleService->userinfo->get();
 
             $email = $userInfo->getEmail();
@@ -526,122 +482,54 @@ class AuthController extends BaseController
             $googleId = $userInfo->getId();
             $picture = $userInfo->getPicture();
 
-            // Check if user exists by Google ID
-            $existingUser = $this->userModel
-                ->where("google_id", $googleId)
-                ->first();
+            // 1. Try get user by Google ID
+            $user = $this->userModel->getUserByGoogleId($googleId);
 
-            if ($existingUser) {
-                // User exists, check role
-                if ($existingUser["role"] !== $role) {
-                    return redirect()
-                        ->to("auth/{$role}/login")
-                        ->with(
-                            "error",
-                            "This Google account is associated with a different role."
-                        );
+            // 2. If not found, try get user by email and update google_id
+            if (!$user && $email) {
+                $user = $this->userModel->getUserByEmailOrUsername($email, $role);
+                if ($user && empty($user['google_id'])) {
+                    $this->userModel->updateGoogleId($user['user_id'], $googleId);
+                    $user['google_id'] = $googleId; // update in $user for session
+                }
+            }
+
+            // 3. If user exists, check role (and doctor verification)
+            if ($user) {
+                if ($user["role"] !== $role) {
+                    return redirect()->to("auth/{$role}/login")
+                        ->with("error", "This account is associated with a different role.");
                 }
 
-                // If doctor, verify account status
-                if ($role === "doctor") {
-                    $doctor = $this->dokterModel
-                        ->where("user_id", $existingUser["user_id"])
-                        ->first();
-
-                    if (!$doctor) {
-                        return redirect()
-                            ->to("auth/doctor/login")
-                            ->with("error", "Doctor profile not found.");
-                    }
-
-                    if (
-                        $doctor["verification_status"] !== "approved" ||
-                        $doctor["is_verified"] != 1
-                    ) {
-                        $message = "Your account is pending verification.";
-
-                        if ($doctor["verification_status"] === "rejected") {
-                            $message =
-                                "Your account verification was rejected. Reason: " .
-                                ($doctor["verification_notes"] ??
-                                    "No reason provided.");
-                        }
-
-                        return redirect()
-                            ->to("auth/doctor/login")
-                            ->with("error", $message);
+                if ($role === "dokter") {
+                    // Verification check (delegated to model)
+                    $dokterStatus = $this->dokterModel->checkVerification($user["user_id"]);
+                    if (!$dokterStatus['ok']) {
+                        return redirect()->to("auth/dokter/login")
+                            ->with("error", $dokterStatus['msg']);
                     }
                 }
 
-                // Set session data and redirect
-                $this->setUserSession($existingUser);
+                // Set session and redirect
+                $this->setUserSession($user);
                 return redirect()->to($this->getRedirectUrl($role));
             }
 
-            // Check if user exists by email
-            $existingUserByEmail = $this->userModel
-                ->where("email", $email)
-                ->first();
-
-            if ($existingUserByEmail) {
-                // Update with Google ID
-                $this->userModel->update($existingUserByEmail["user_id"], [
-                    "google_id" => $googleId,
-                ]);
-
-                // Same role checks as above
-                if ($existingUserByEmail["role"] !== $role) {
-                    return redirect()
-                        ->to("auth/{$role}/login")
-                        ->with(
-                            "error",
-                            "This email is associated with a different role."
-                        );
-                }
-
-                if ($role === "doctor") {
-                    $doctor = $this->dokterModel
-                        ->where("user_id", $existingUserByEmail["user_id"])
-                        ->first();
-
-                    if (
-                        !$doctor ||
-                        $doctor["verification_status"] !== "approved" ||
-                        $doctor["is_verified"] != 1
-                    ) {
-                        return redirect()
-                            ->to("auth/doctor/login")
-                            ->with(
-                                "error",
-                                "Your doctor account is not verified or was rejected."
-                            );
-                    }
-                }
-
-                $this->setUserSession($existingUserByEmail);
-                return redirect()->to($this->getRedirectUrl($role));
-            }
-
-            // New user - store data in session for additional registration
+            // 4. If user not found, save data to session for social registration
             $googleData = [
                 "email" => $email,
                 "name" => $name,
                 "google_id" => $googleId,
                 "picture" => $picture,
             ];
-
             $this->session->set("google_data", $googleData);
 
-            // Redirect to role-specific social registration
+            // Redirect to registration
             return redirect()->to("auth/register/social/{$role}");
         } catch (\Exception $e) {
             log_message("error", "Google callback error: " . $e->getMessage());
-            return redirect()
-                ->to("auth/{$role}/login")
-                ->with(
-                    "error",
-                    "Failed to sign in with Google: " . $e->getMessage()
-                );
+            return redirect()->to("auth/{$role}/login")
+                ->with("error", "Failed to sign in with Google: " . $e->getMessage());
         }
     }
 
@@ -653,40 +541,54 @@ class AuthController extends BaseController
         $googleData = $this->session->get('google_data');
         // Prefer role from google_data, then from session, fallback to URL param
         $role = $googleData['intended_role'] ?? $this->session->get('intended_role') ?? $role;
-    
+        $spesialisasiModel = new \App\Models\SpesialisasiModel();
+        $data['spesialisasiList'] = $spesialisasiModel->findAll();
+
         $data["google_data"] = $googleData;
         $data["role"] = $role;
         $data["title"] = "Complete Social Registration";
-    
+
         return view("auth/complete_social_registration", $data);
     }
 
     /**
-     * Complete doctor social registration
+     * Complete social pasien registration
      */
-    public function completeDoctorSocialRegistration()
+    public function completeSocialRegistration()
     {
+        $session = session();
+        $role = $this->request->getPost('role'); // 'dokter' or 'pasien'
+        $googleData = $session->get("google_data");
 
-        $googleData = $this->session->get("google_data");
-
-        if (!$googleData) {
-            return redirect()
-                ->to("auth/doctor/login")
-                ->with(
-                    "error",
-                    "No social registration data found. Please try again."
-                );
-        }
-
-        // Validate input
         $validation = \Config\Services::validation();
-        $validation->setRules([
-            "username" =>
-                "required|alpha_numeric_space|min_length[3]|is_unique[Users.username]",
-            "no_telp_dokter" => "required|numeric|min_length[10]",
-            "id_spesialisasi" => "required|numeric",
-            "no_lisensi" => "required|is_unique[Dokter.NO_LISENSI]",
-        ]);
+
+        // Validation rules
+        if ($role === 'dokter') {
+            $validation->setRules([
+                "username" => "required|alpha_numeric_space|min_length[3]|is_unique[users.username]",
+                "telepon_dokter" => "required|numeric|min_length[10]",
+                "id_spesialisasi" => "required",
+                "no_lisensi" => "required|is_unique[dokter.no_lisensi]",
+                "alamat_dokter" => "required",
+                "jenis_kelamin" => "required|in_list[L,P]",
+                "lokasi_kerja" => "required|in_list[Jakarta,Bandung,Surabaya]",
+                "tanggal_lahir" => "required|valid_date",
+            ]);
+        } else {
+            $validation->setRules([
+                "email" => "required|valid_email",
+                "username" => "required|alpha_numeric_punct|min_length[3]|max_length[30]|is_unique[users.username]",
+                "password" => "required|min_length[8]",
+                "confirm_password" => "required|matches[password]",
+                "nama_pasien" => "required|min_length[3]",
+                "jenis_kelamin" => "required|in_list[L,P]",
+                "no_telp_pasien" => "required|numeric|min_length[10]",
+                "tempat_lahir" => "required",
+                "lokasi" => "required|in_list[JKT,BDG,SBY]",
+                "tanggal_lahir" => "required|valid_date",
+                "alamat" => "required",
+            ]);
+        }
 
         if (!$validation->withRequest($this->request)->run()) {
             return redirect()
@@ -695,191 +597,119 @@ class AuthController extends BaseController
                 ->with("error", implode("<br>", $validation->getErrors()));
         }
 
-        // Start transaction
         $db = \Config\Database::connect();
         $db->transStart();
 
         try {
-            // Create user
-            $userData = [
-                "username" => htmlspecialchars(
-                    $this->request->getPost("username"),
-                    ENT_QUOTES,
-                    "UTF-8"
-                ),
-                "email" => $googleData["email"],
-                "google_id" => $googleData["google_id"],
-                "password" => password_hash(
-                    random_string("alnum", 16),
-                    PASSWORD_DEFAULT
-                ), // Generate a random password
-                "role" => "doctor",
-                "is_active" => 1,
-                "created_at" => date("Y-m-d H:i:s"),
-            ];
+            if ($role === 'dokter') {
+                // --- DOCTOR REGISTRATION ---
+                $userModel = new UserModel();
+                $dokterModel = new DokterModel();
 
-            $userId = $this->userModel->insert($userData);
+                $userId = $userModel->generateUserId();
+                $id_dokter = $dokterModel->generateDokterId($this->request->getPost("id_spesialisasi"));
 
-            // Create doctor profile
-            $doctorData = [
-                "user_id" => $userId,
-                "nama_dokter" => $googleData["name"],
-                "id_spesialisasi" => (int) $this->request->getPost(
-                    "id_spesialisasi"
-                ),
-                "NO_TELP_DOKTER" => htmlspecialchars(
-                    $this->request->getPost("no_telp_dokter"),
-                    ENT_QUOTES,
-                    "UTF-8"
-                ),
-                "NO_LISENSI" => htmlspecialchars(
-                    $this->request->getPost("no_lisensi"),
-                    ENT_QUOTES,
-                    "UTF-8"
-                ),
-                "is_verified" => 0,
-                "verification_status" => "pending",
-                "created_by" => $userId,
-                "updated_by" => $userId,
-            ];
+                $userData = [
+                    "user_id" => $userId,
+                    "username" => htmlspecialchars($this->request->getPost("username"), ENT_QUOTES, "UTF-8"),
+                    "email" => $googleData["email"] ?? null,
+                    "google_id" => $googleData["google_id"] ?? null,
+                    "password" => password_hash($this->request->getPost("password"), PASSWORD_DEFAULT),
+                    "role" => "dokter",
+                    "status" => "active",
+                    "created_by" => $userId,
+                    "updated_by" => $userId,
+                ];
+                $userModel->insert($userData);
 
-            $this->dokterModel->insert($doctorData);
+                $rawNamaDokter = $googleData["name"] ?? $this->request->getPost("nama_dokter");
+                $namaDokterWithPrefix = preg_match('/^Dr\. /i', $rawNamaDokter) ? $rawNamaDokter : 'Dr. ' . $rawNamaDokter;
 
-            $db->transComplete();
+                $doctorData = [
+                    "id_dokter" => $id_dokter,
+                    "user_id" => $userId,
+                    "nama_dokter" => $namaDokterWithPrefix,
+                    "id_spesialisasi" => $this->request->getPost("id_spesialisasi"),
+                    "telepon_dokter" => htmlspecialchars($this->request->getPost("telepon_dokter"), ENT_QUOTES, "UTF-8"),
+                    "no_lisensi" => htmlspecialchars($this->request->getPost("no_lisensi"), ENT_QUOTES, "UTF-8"),
+                    "lokasi_kerja" => $this->request->getPost("lokasi_kerja"),
+                    "alamat_dokter" => $this->request->getPost("alamat_dokter"),
+                    "jenis_kelamin" => $this->request->getPost("jenis_kelamin"),
+                    "tanggal_lahir" => $this->request->getPost("tanggal_lahir"),
+                    "is_verified" => 0,
+                    "verification_status" => "pending",
+                    "created_by" => $userId,
+                    "updated_by" => $userId,
+                ];
+                $dokterModel->insert($doctorData);
 
-            if ($db->transStatus() === false) {
-                throw new \Exception("Database transaction failed");
+                $db->transComplete();
+                if ($db->transStatus() === false) throw new \Exception("Database transaction failed");
+
+                $session->remove("google_data");
+
+                return redirect()
+                    ->to("auth/dokter/login")
+                    ->with("success", "Registration successful! Your account is pending verification. We will contact you once your account has been verified.");
+            } else {
+                // --- PATIENT REGISTRATION ---
+                $userModel = new UserModel();
+                $pasienModel = new PasienModel();
+
+                $userId = $userModel->generateUserId();
+
+                $userData = [
+                    "user_id" => $userId,
+                    "username" => htmlspecialchars($this->request->getPost("username"), ENT_QUOTES, "UTF-8"),
+                    "email" => $this->request->getPost("email"),
+                    "password" => password_hash($this->request->getPost("password"), PASSWORD_DEFAULT),
+                    "role" => "pasien",
+                    "status" => "active",
+                    "created_by" => $userId,
+                    "updated_by" => $userId,
+                ];
+                $userModel->insert($userData);
+
+                $pasienData = [
+                    "no_identitas" => $this->request->getPost("no_identitas"),
+                    "nama_pasien" => $this->request->getPost("nama_pasien"),
+                    "jenis_kelamin" => $this->request->getPost("jenis_kelamin"),
+                    "no_telp_pasien" => $this->request->getPost("no_telp_pasien"),
+                    "tempat_lahir" => $this->request->getPost("tempat_lahir"),
+                    "tanggal_lahir" => $this->request->getPost("tanggal_lahir"),
+                    "alamat" => $this->request->getPost("alamat"),
+                    "email" => $this->request->getPost("email"),
+                    "lokasi" => $this->request->getPost("lokasi"),
+                ];
+                $pasienResult = $pasienModel->createPasienProfile($userId, $pasienData);
+
+                $db->transComplete();
+                if ($db->transStatus() === false) throw new \Exception("Database transaction failed");
+
+                // Set up the session
+                $session->set([
+                    "user_id" => $userId,
+                    "username" => $this->request->getPost("username"),
+                    "email" => $this->request->getPost("email"),
+                    "role" => "pasien",
+                    "pasien_id" => $pasienResult['pasien_id'],
+                    "is_logged_in" => true,
+                ]);
+
+                return redirect()
+                    ->to("/pasien/dashboard")
+                    ->with("success", "Registration completed successfully. Welcome!");
             }
-
-            // Clear the temporary data
-            $this->session->remove("google_data");
-
-            return redirect()
-                ->to("auth/doctor/login")
-                ->with(
-                    "success",
-                    "Registration successful! Your account is pending verification. We will contact you once your account has been verified."
-                );
-        } catch (\Exception $e) {
-            $db->transRollback();
-            log_message(
-                "error",
-                "Doctor social registration failed: " . $e->getMessage()
-            );
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with("error", "Registration failed: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * Complete social pasien registration
-     */
-    public function completeSocialRegistration()
-    {
-        // Validate form inputs
-        $validation = \Config\Services::validation();
-        $validation->setRules([
-            "email" => "required|valid_email",
-            "username" =>
-                "required|alpha_numeric_punct|min_length[3]|max_length[30]|is_unique[users.username]",
-            "password" => "required|min_length[8]",
-            "confirm_password" => "required|matches[password]",
-            "nama_pasien" => "required|min_length[3]",
-            "jenis_kelamin" => "required|in_list[L,P]",
-            "no_telp_pasien" => "required|numeric|min_length[10]",
-            "tempat_lahir" => "required",
-            "lokasi" => "required|in_list[JKT,BDG,SBY]",
-            "tanggal_lahir" => "required|valid_date",
-            "alamat" => "required",
-        ]);
-
-        if (!$validation->withRequest($this->request)->run()) {
-            return redirect()
-                ->back()
-                ->with("error", implode("<br>", $validation->getErrors()))
-                ->withInput();
-        }
-
-        // Get the form data
-        $email = $this->request->getPost("email");
-        $username = $this->request->getPost("username");
-        $password = $this->request->getPost("password");
-
-        // Start transaction
-        $db = \Config\Database::connect();
-        $db->transStart();
-        
-        try {
-            $lokasi = $this->request->getPost('lokasi'); // <-- add semicolon
-        
-            // Create user account
-            $userModel = new \App\Models\UserModel();
-            $userData = [
-                "username" => $username,
-                "email" => $email,
-                "password" => password_hash($password, PASSWORD_DEFAULT),
-                "role" => "pasien",
-                "status" => "active",
-            ];
-            $userModel->insert($userData);
-            $userId = $userModel->getInsertID();
-        
-            // Generate custom pasien ID using stored procedure
-            $db->query("CALL GeneratePasienID(?, @new_id)", [$lokasi]);
-            $newIdQuery = $db->query("SELECT @new_id AS id_pasien");
-            $newIdPasien = $newIdQuery->getRow()->id_pasien;
-        
-            // Create pasien profile
-            $pasienModel = new \App\Models\PasienModel();
-            $pasienData = [
-                "user_id"       => $userId,
-                "id_pasien"     => $newIdPasien,
-                "no_identitas"  => $this->request->getPost("no_identitas"),
-                "nama_pasien"   => $this->request->getPost("nama_pasien"),
-                "jenis_kelamin" => $this->request->getPost("jenis_kelamin"),
-                "telepon"       => $this->request->getPost("telepon"),
-                "tempat_lahir"  => $this->request->getPost("tempat_lahir"),
-                "tanggal_lahir" => $this->request->getPost("tanggal_lahir"),
-                "alamat"        => $this->request->getPost("alamat"),
-                "email"         => $email,
-                "lokasi"        => $lokasi,
-                "created_by"    => $userId,
-                "updated_by"    => $userId,
-            ];
-            $pasienModel->insert($pasienData);
-        
-            $db->transComplete();
-        
-            if ($db->transStatus() === false) {
-                throw new \Exception("Database transaction failed.");
-            }
-        
-            // Set up the pasien session
-            $session = session();
-            $session->set([
-                "user_id"     => $userId,
-                "username"    => $username,
-                "email"       => $email,
-                "role"        => "pasien",
-                "pasien_id"  => $newIdPasien, // use the custom ID here!
-                "is_logged_in"=> true,
-            ]);
-        
-            return redirect()
-                ->to("/pasien/dashboard")
-                ->with("success", "Registration completed successfully. Welcome to our healthcare system!");
         } catch (\Exception $e) {
             $db->transRollback();
             log_message("error", "Registration error: " . $e->getMessage());
-        
             return redirect()
                 ->back()
-                ->with("error", "Registration failed: " . (ENVIRONMENT === "production" ? "A system error occurred." : $e->getMessage()))
-                ->withInput();
+                ->withInput()
+                ->with("error", "Registration failed: " . (ENVIRONMENT === "production" ? "A system error occurred." : $e->getMessage()));
         }
     }
+
     /**
      * User logout
      */
@@ -920,9 +750,9 @@ class AuthController extends BaseController
                 ->where("user_id", $user["user_id"])
                 ->first();
             if ($pasien) {
-                $sessionData["pasien_id"] = $pasien["PASIEN_ID"];
+                $sessionData["pasien_id"] = $pasien["id_pasien"];
                 $sessionData["full_name"] =
-                    $pasien["NAMA_LENGKAP"] ?? $user["username"];
+                    $pasien["nama_pasien"] ?? $user["username"];
             }
         } elseif ($user["role"] === "doctor") {
             $doctor = $this->dokterModel
@@ -972,40 +802,6 @@ class AuthController extends BaseController
         }
     }
 
-
-    /**
-     * Generate unique username from a name
-     */
-    private function generateUsername(string $name): string
-    {
-        // Remove special characters and spaces
-        $baseUsername = preg_replace("/[^a-zA-Z0-9]/", "", strtolower($name));
-
-        // Ensure minimum length
-        if (strlen($baseUsername) < 3) {
-            $baseUsername .= random_string("alnum", 3);
-        }
-
-        // Check if username exists
-        $existingUser = $this->userModel
-            ->where("username", $baseUsername)
-            ->first();
-
-        if (!$existingUser) {
-            return $baseUsername;
-        }
-
-        // Add a random number until unique
-        $i = 1;
-        $username = $baseUsername . $i;
-
-        while ($this->userModel->where("username", $username)->first()) {
-            $i++;
-            $username = $baseUsername . $i;
-        }
-
-        return $username;
-    }
 
     /**
      * Send verification email to doctors (placeholder for implementation)

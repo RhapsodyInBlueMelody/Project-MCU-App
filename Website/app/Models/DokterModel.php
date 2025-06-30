@@ -1,131 +1,103 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
 
 use CodeIgniter\Model;
+use phpseclib3\Common\Functions\Strings;
 
 class DokterModel extends Model
 {
     protected $table = "dokter";
     protected $primaryKey = "id_dokter";
     protected $allowedFields = [
+        "id_dokter",
         "user_id",
         "nama_dokter",
         "id_spesialisasi",
         "no_lisensi",
         "telepon_dokter",
+        "lokasi_kerja",
+        "alamat_dokter",
+        "jenis_kelamin",
+        "tanggal_lahir",
         "is_verified",
         "verification_status",
-        "verification_date",
-        "verification_notes",
+        "created_by",
+        "updated_by"
     ];
     protected $useTimestamps = true;
     protected $createdField = "created_at";
     protected $updatedField = "updated_at";
+
+
+    /**
+     * Generate a new dokter ID using stored procedure
+     */
+    public function generateDokterId($spesialisasi): string
+    {
+        $db = \Config\Database::connect();
+        $db->query("CALL GenerateDokterId(?, @new_id_dokter)", [$spesialisasi]);
+        $query = $db->query("SELECT @new_id_dokter AS id_dokter");
+        $result = $query->getRow();
+
+        if (!$result || !$result->id_dokter) {
+            throw new \Exception('Dokter ID generation failed.');
+        }
+
+        return $result->id_dokter;
+    }
 
     public function getVerifiedDoctorProfile($userId)
     {
         $doctor = $this->where("user_id", $userId)->first();
 
         if (!$doctor) {
-            return ["error" => "Doctor not found"];
+            return ["error" => "not_found"];
         }
 
-        if ($doctor["is_verified"] != 1 || $doctor["verification_status"] != "approved") {
-            if ($doctor["verification_status"] == "rejected") {
-                return ["error" => "Doctor verification is still pending"];
-        }
-            return ["error" => "Doctor is not verified"];
+        if ($doctor["is_verified"] != 1 || $doctor["verification_status"] !== "approved") {
+            if ($doctor["verification_status"] === "rejected") {
+                return ["error" => "rejected", "verification_notes" => $doctor["verification_notes"] ?? ""];
+            }
+            return ["error" => "not_verified"];
         }
 
         return $doctor;
-        
     }
 
-    public function getDoctorsByspesialisasiId($spesialisasiId)
+    public function checkVerification($userId)
     {
-        return $this->where("id_spesialisasi", $spesialisasiId)->findAll();
+        $doctor = $this->where("user_id", $userId)->first();
+
+        if (!$doctor) {
+            return ['ok' => false, 'msg' => "Akun Dokter tidak ditemukan."];
+        }
+        if ($doctor["verification_status"] !== "approved" || $doctor["is_verified"] != 1) {
+            $msg = "Your account is pending verification.";
+            if ($doctor["verification_status"] === "rejected") {
+                $msg = "Your account verification was rejected. Reason: " .
+                    ($doctor["verification_notes"] ?? "No reason provided.");
+            }
+            return ['ok' => false, 'msg' => $msg];
+        }
+        return ['ok' => true, 'msg' => ''];
     }
 
-    public function getAllDoctorsWithspesialisasi()
-    {
-        $result = $this->db
-            ->table("dokter")
-            ->select("dokter.*, spesialisasi.nama_spesialisasi")
-            ->join(
-                "spesialisasi",
-                "dokter.id_spesialisasi = spesialisasi.id_spesialisasi",
-                "left"
-            )
-            ->get()
-            ->getResultArray();
-
-        return $result;
-    }
-
-    public function findDoctorByIdWithspesialisasi($doctorId)
+    public function getAllDoctorsWithSpesialisasi()
     {
         return $this->db
             ->table("dokter")
-            ->select("dokter.*, spesialisasi.nama_spesialisasi")
-            ->join(
-                "spesialisasi",
-                "dokter.id_spesialisasi = spesialisasi.id_spesialisasi",
-                "left"
-            )
-            ->where("id_dokter", $doctorId)
+            ->select("dokter.id_dokter, dokter.nama_dokter, dokter.id_spesialisasi, spesialisasi.nama_spesialisasi")
+            ->join("spesialisasi", "dokter.id_spesialisasi = spesialisasi.id_spesialisasi", "left")
             ->get()
-            ->getRowArray();
+            ->getResultArray();
     }
 
-    public function findDoctorByUserId($userId)
+    public function findDoctorByIdWithSpesialisasi($doctorId)
     {
-        return $this->where("user_id", $userId)->first();
-    }
-
-    public function createDoctorFromSocialLogin($userData, $doctorData)
-    {
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        try {
-            // Insert user
-            $usersModel = new \App\Models\UserModel();
-            $userId = $usersModel->insert($userData);
-
-            // Insert doctor data
-            $doctorData["user_id"] = $userId;
-            $doctorData["created_by"] = $userId;
-            $doctorData["updated_by"] = $userId;
-            $doctorId = $this->insert($doctorData);
-
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                $db->transRollback();
-                return false;
-            }
-
-            return [
-                "user_id" => $userId,
-                "doctor_id" => $doctorId,
-            ];
-        } catch (\Exception $e) {
-            $db->transRollback();
-            log_message(
-                "error",
-                "Error creating doctor from social login: " . $e->getMessage()
-            );
-            return false;
-        }
-    }
-
-    public function verifyDoctor($doctorId, $verificationData)
-    {
-        try {
-            $this->update($doctorId, $verificationData);
-            return true;
-        } catch (\Exception $e) {
-            log_message("error", "Error verifying doctor: " . $e->getMessage());
-            return false;
-        }
+        return $this->select('dokter.*, spesialisasi.nama_spesialisasi')
+            ->join('spesialisasi', 'spesialisasi.id_spesialisasi = dokter.id_spesialisasi', 'left')
+            ->where('dokter.id_dokter', $doctorId)
+            ->first();
     }
 }

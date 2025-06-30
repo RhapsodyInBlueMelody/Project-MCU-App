@@ -16,10 +16,10 @@ class Database extends Config
         // Set default connection details in constructor
         $this->default = [
             'DSN'          => '',
-            'hostname'     => 'localhost:3306',
-            'username'     => 'alfr7592_faiz',
-            'password'     => 'R8JkjsbSLjzU',
-            'database'     => 'alfr7592_mcu',
+            'hostname'     => '',
+            'username'     => '',
+            'password'     => '',
+            'database'     => '',
             'DBDriver'     => 'MySQLi',
             'DBPrefix'     => '',
             'pConnect'     => false,

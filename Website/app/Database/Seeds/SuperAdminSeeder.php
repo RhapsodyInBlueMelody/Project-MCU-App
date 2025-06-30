@@ -22,7 +22,7 @@ class SuperAdminSeeder extends Seeder
             'email'       => 'superadmin@example.com',
             'password'    => password_hash('supersecurepassword', PASSWORD_DEFAULT),
             'role'        => 'admin',
-            'status'      => 1,
+            'status'      => 'active',
             'google_id'   => null,
             'created_by'  => null,
             'created_at'  => date('Y-m-d H:i:s'),

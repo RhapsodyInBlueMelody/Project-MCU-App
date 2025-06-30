@@ -1,28 +1,53 @@
 body {
-    background-image:
-        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-        url("../images/hospital-bg.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("../images/hospital-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 .login-container {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 @media (max-width: 576px) {
-    .login-container {
-        max-width: 90%;
-        padding: 1.5rem;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    h2 {
-        font-size: 1.5rem;
-    }
+  .login-container {
+    max-width: 90%;
+    padding: 1.5rem;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+.google-login-btn {
+  background-color: #992300; /* Google Blue */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+  text-decoration: none; /* To remove default link styling */
+}
+
+.google-login-btn:hover {
+  opacity: 0.9;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  vertical-align: middle;
 }

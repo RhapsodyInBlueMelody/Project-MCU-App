@@ -150,6 +150,11 @@ class CreateMcuDatabase extends Migration
 
         // Table: dokter
         $this->forge->addField([
+            'user_id' => [
+                'type' => 'BIGINT',
+                'constraint' => 20,
+                'unsigned' => true,
+            ],
             'id_dokter' => [
                 'type' => 'BIGINT',
                 'constraint' => 20,
@@ -186,6 +191,7 @@ class CreateMcuDatabase extends Migration
             ],
         ]);
         $this->forge->addKey('id_dokter', true);
+        $this->forge->addForeignKey('user_id', 'users', 'user_id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('id_spesialisasi', 'spesialisasi', 'id_spesialisasi', 'CASCADE', 'CASCADE');
         $this->forge->createTable('dokter');
 

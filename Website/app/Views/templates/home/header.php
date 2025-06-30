@@ -52,7 +52,7 @@
         <div class="container mx-auto flex justify-between items-center">
             <a href="#" class="mr-8">
                 <div class="border border-gray-300 w-32 h-10 flex justify-center items-center text-gray-600 text-xs">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSvsyzURp7vnROIBKK1PNPJpvNbOb8JNXWvQ&s" alt="Logo" class="w-full h-full object-contain">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSvsyzURp7vnROIBKK1PNPJpvNbOb8JNXWvQ&s" alt="Logo" class="w-full h-full object-contain">
                 </div>
             </a>
             <button id="toggleMobileMenu" class="focus:outline-none">
@@ -67,15 +67,15 @@
                 <li><a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">Rumah Sakit Kami</a></li>
                 <li><a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">Fasilitas Kami</a></li>
                 <li><a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">Cari Dokter</a></li>
-            <li class="mt-4">
-                <div class="flex flex-col space-y-2 items-stretch">
-                    <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded-full text-sm" type="button">Buat Janji Temu</button>
-                    <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded-full text-sm" type="button">Daftar/Masuk</button>
-                </div>
-            </li>
-        </ul>
-    </div>
-</nav>
+                <li class="mt-4">
+                    <div class="flex flex-col space-y-2 items-stretch">
+                        <button onclick="location.href='<?php echo base_url(); ?>auth/pasien/login'" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded-full text-sm" type="button">Buat Janji Temu</button>
+                        <button onclick="location.href='<?php echo base_url(); ?>auth/pasien/login'" class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded-full text-sm" type="button">Daftar/Masuk</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
     <!-- Navigation Bar (Desktop) -->
     <nav class="bg-purple-100 py-2 px-5 hidden lg:flex relative">
@@ -103,9 +103,8 @@
             </ul>
 
             <div class="flex space-x-4">
-                <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-1 px-3 border border-blue-500 hover:border-transparent rounded-full text-sm">Buat Janji Temu</button>
-                <button class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-1 px-3 border border-green-500 hover:border-transparent rounded-full text-sm">Daftar/Masuk</button>
-                <button id="checkout-button">Checkout Now</button>
+                <button onclick="location.href='<?php echo base_url(); ?>auth/pasien/login'" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-1 px-3 border border-blue-500 hover:border-transparent rounded-full text-sm">Buat Janji Temu</button>
+                <button onclick="location.href='<?php echo base_url(); ?>auth/pasien/login'" class="bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-1 px-3 border border-green-500 hover:border-transparent rounded-full text-sm">Daftar/Masuk</button>
 
             </div>
         </div>

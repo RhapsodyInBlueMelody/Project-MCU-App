@@ -68,7 +68,7 @@ class DoctorSeeder extends Seeder
                     'email'      => $entry['email'],
                     'password'   => $entry['password'],
                     'role'       => 'dokter',
-                    'status'     => 1,
+                    'status'     => 'active',
                     'created_by' => null,
                     'created_at' => date('Y-m-d H:i:s'),
                 ]);
@@ -95,7 +95,7 @@ class DoctorSeeder extends Seeder
                     'no_lisensi'         => $entry['no_lisensi'],
                     'telepon_dokter'     => $entry['telepon_dokter'],
                     'is_verified'        => 1,
-                    'verification_status'=> 'approved',
+                    'verification_status' => 'approved',
                     'verification_notes' => 'Seeder auto-approve',
                     'created_by'         => null,
                     'created_at'         => $created_at,

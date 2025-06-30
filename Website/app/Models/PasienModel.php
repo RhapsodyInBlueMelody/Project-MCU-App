@@ -1,4 +1,6 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
 
 use CodeIgniter\Model;
 
@@ -17,24 +19,64 @@ class PasienModel extends Model
         "telepon",
         "alamat",
         "email",
-        "lokasi"
+        "lokasi",
+        "created_by",
+        "updated_by"
     ];
 
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    /**
-     * Retrieves a patient profile based on the user ID.
-     *
-     * @param int $userId The ID of the user associated with the profile.
-     * @return array|object|null The patient profile data, or null if not found.
-     */
-    public function getPatientProfile(int $userId)
+    public function getPatientProfile($userId)
     {
         return $this->where("user_id", $userId)->first();
     }
 
-    // You can add other methods to your PatientModel here, such as
-    // methods to update or delete patient profiles.
+    /**
+     * Generate a new pasien ID using stored procedure
+     */
+    public function generatePasienId($lokasi): string
+    {
+        $db = \Config\Database::connect();
+        $db->query("CALL GeneratePasienId(?, @new_id_pasien)", [$lokasi]);
+        $query = $db->query("SELECT @new_id_pasien AS id_pasien");
+        $result = $query->getRow();
+
+        if (!$result || !$result->id_pasien || $result->id_pasien === 'INVALID-LOC') {
+            throw new \Exception('Pasien ID generation failed: invalid location or system error.');
+        }
+
+        return $result->id_pasien;
+    }
+
+    /**
+     * Create new pasien profile
+     */
+    public function createPasienProfile($userId, $data): array
+    {
+        $pasienId = $this->generatePasienId($data['lokasi']);
+
+        $pasienData = [
+            "user_id" => $userId,
+            "id_pasien" => $pasienId,
+            "no_identitas" => $data["no_identitas"] ?? null,
+            "nama_pasien" => $data["nama_pasien"],
+            "jenis_kelamin" => $data["jenis_kelamin"],
+            "telepon" => $data["no_telp_pasien"],
+            "tempat_lahir" => $data["tempat_lahir"],
+            "tanggal_lahir" => $data["tanggal_lahir"],
+            "alamat" => $data["alamat"],
+            "email" => $data["email"],
+            "lokasi" => $data["lokasi"],
+            "created_by" => $userId,
+            "updated_by" => $userId,
+        ];
+
+        $this->insert($pasienData);
+
+        return [
+            'pasien_id' => $pasienId
+        ];
+    }
 }
