@@ -14,6 +14,8 @@ class Pasien extends AuthenticatedController
 {
     use ResponseTrait;
 
+    protected $helpers = ['form', 'url'];
+
     protected $pasienId;
     protected $dokterModel;
     protected $paketModel;
@@ -97,34 +99,90 @@ class Pasien extends AuthenticatedController
         $pasienId = session()->get('id_pasien');
         $userId = session()->get('user_id');
 
-        // Step 1: Create the appointment
-        $result = $this->appointmentModel->createAppointment(
-            ['id_pasien' => $pasienId, 'user_id' => $userId],
-            $this->request
-        );
+        // Define the rules array
+        $rules = [
+            "nama_janji"        => "required|min_length[3]|max_length[255]|string",
+            "tanggal_janji"     => "required|valid_date",
+            "waktu_janji"       => "required|regex_match[/(0[89]|1[0-7]):[0-5][0-9]/]",
+            "paket_terpilih"    => "required|numeric|is_natural_no_zero",
+            "id_dokter"         => "required|min_length[1]|max_length[30]|alpha_numeric_punct",
+        ];
 
-        if (!$result['success']) {
-            $errorMsg = is_array($result['errors'])
-                ? implode("<br>", $result['errors'])
-                : $result['errors'];
-            return redirect()
-                ->back()
-                ->with("error", $errorMsg)
-                ->withInput();
+        // Define the custom messages array
+        $messages = [
+            "nama_janji" => [
+                "required" => "Nama janji harus diisi.",
+                "min_length" => "Nama janji minimal 3 karakter.",
+                "max_length" => "Nama janji maksimal 255 karakter.",
+            ],
+            "tanggal_janji" => [
+                "required" => "Tanggal janji harus diisi.",
+                "valid_date" => "Format tanggal tidak valid.",
+            ],
+            "waktu_janji" => [
+                "required" => "Waktu janji harus diisi.",
+                "regex_match" => "Waktu janji harus antara jam 08:00 - 17:00.",
+            ],
+            "paket_terpilih" => [
+                "required" => "Paket harus dipilih.",
+                "numeric" => "Paket tidak valid.",
+                "is_natural_no_zero" => "Paket tidak valid.",
+            ],
+            "id_dokter" => [
+                "required" => "Dokter harus dipilih.",
+                "min_length" => "ID dokter tidak boleh kosong.",
+                "max_length" => "ID dokter terlalu panjang.",
+                "alpha_numeric_punct" => "ID dokter mengandung karakter tidak valid.",
+            ],
+        ];
+
+        // Pass the rules and messages directly to the controller's validate() method
+        if (!$this->validate($rules, $messages)) {
+            // $this->validator automatically holds the errors after a failed validation
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $id_janji_temu = $result['id_janji_temu'];
+        $idJanjiTemu = $this->appointmentModel->generateAppointmentId();
+
+        if (!$idJanjiTemu) {
+            return redirect()->back()->withInput()->with('error', 'Janji Tidak Dapat Dibuat');
+        }
+
+
+        $data = [
+            'id_janji_temu' => $idJanjiTemu,
+            'nama_janji'    => esc($this->request->getPost('nama_janji')),
+            'id_pasien'     => session('id_pasien'), // Must exist!
+            'tanggal_janji' => $this->request->getPost('tanggal_janji'), // YYYY-MM-DD
+            'waktu_janji'   => $this->request->getPost('waktu_janji') . ':00', // HH:MM:SS
+            'id_dokter'     => $this->request->getPost('id_dokter'),
+            'id_paket'      => (int)$this->request->getPost('paket_terpilih'), // Force INT
+            'status'        => 'pending'
+        ];
+
+        try {
+            $this->appointmentModel->createAppointment($data);
+        } catch (\Exception $e) {
+            // Make sure your catch block here displays the actual database error for debugging!
+            $dbError = $this->appointmentModel->db->error();
+            $errorMessage = 'Gagal menyimpan: ' . $e->getMessage();
+            if ($dbError['code'] !== 0) {
+                $errorMessage .= ' (DB Error ' . $dbError['code'] . ': ' . $dbError['message'] . ')';
+            }
+            return redirect()->back()->withInput()->with('error', $errorMessage);
+        }
+
 
         $id_paket = $this->request->getPost('paket_terpilih');
         $paket = $this->paketModel->find($id_paket);
 
         $transaksiData = [
-            'id_janji_temu'     => $id_janji_temu,
+            'id_janji_temu'     => $idJanjiTemu,
             'id_pasien'         => $pasienId,
             'id_paket'          => $id_paket,
             'tanggal_transaksi' => date('Y-m-d H:i:s'),
             'total_harga'       => $paket ? $paket['harga'] : 0,
-            'status_pembayaran' => 'belum lunas',
+            'status_pembayaran' => 'pending',
             'created_by'        => $userId,
             'created_at'        => date('Y-m-d H:i:s')
         ];
@@ -133,7 +191,7 @@ class Pasien extends AuthenticatedController
 
         $this->logActivity(
             "create_appointment",
-            "Created new appointment with ID: $id_janji_temu and transaction ID: $id_transaksi"
+            "Created new appointment with ID: $idJanjiTemu and transaction ID: $id_transaksi"
         );
 
         return redirect()
@@ -315,6 +373,32 @@ class Pasien extends AuthenticatedController
             "totalCheckups" => $stats["totalCheckups"],
             "healthStatus" => $stats["healthStatus"],
         ]);
+    }
+
+    public function diagnosisPrint($diagnosisId = null)
+    {
+        if ($diagnosisId === null) {
+            return redirect()->back()->with("error", "Diagnosis ID diperlukan");
+        }
+
+        $diagnosisModel = new \App\Models\DiagnosisModel();
+        $diagnosis = $diagnosisModel->getDiagnosisDetails($diagnosisId);
+
+        if (!$diagnosis) {
+            return redirect()->back()->with("error", "Diagnosis tidak ditemukan");
+        }
+
+        // Render the PDF using a view
+        $html = view('document/diagnosis_pdf', ['diagnosis' => $diagnosis]);
+
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Output PDF to browser (inline)
+        $dompdf->stream('document/diagnosis.pdf', ['Attachment' => false]);
+        exit; // Ensure no extra output
     }
 
     // Helper method to log user activities for audit trail

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,8 +14,8 @@
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
 
     <title><?= isset($title)
-        ? esc($title) . " - "
-        : "" ?>Medical Check Up</title>
+                ? esc($title) . " - "
+                : "" ?>Medical Check Up</title>
 
     <!-- Preload critical assets -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
@@ -41,18 +42,26 @@
             background-size: cover;
             margin-right: 0.5rem;
         }
+
         .bg-info-500 {
             background-color: #3498db;
         }
+
         /* Add skeleton loader styles for perceived performance */
         .skeleton {
             animation: pulse 1.5s infinite;
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
         }
+
         @keyframes pulse {
-            0% { background-position: 0% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 0% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
     </style>
 
@@ -77,6 +86,7 @@
         });
     </script>
 </head>
+
 <body class="bg-gray-100 font-sans antialiased min-h-screen flex flex-col">
     <!-- Accessibility skip link -->
     <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-white focus:text-blue-500 focus:z-50">Skip to content</a>
@@ -88,8 +98,8 @@
         </div>
         <div id="language-switcher-mobile" class="flex items-center">
             <div class="flag-container" id="flag-display-mobile" style="background-image: url('<?= base_url(
-                "assets/images/flag-indonesia.png"
-            ) ?>');"></div>
+                                                                                                    "assets/images/flag-indonesia.png"
+                                                                                                ) ?>');"></div>
             <div class="inline-flex items-center mr-2">
                 <input type="radio" name="language-mobile" id="en-mobile" value="en" class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
                 <label class="ml-1 text-sm text-gray-700" for="en-mobile">EN</label>
@@ -106,8 +116,8 @@
         <div class="container mx-auto flex items-center justify-between">
             <a href="<?= base_url() ?>" class="flex items-center">
                 <img src="<?= base_url(
-                    "assets/images/logo.jpg"
-                ) ?>" alt="Medical Check Up Logo" class="w-32 h-10" loading="eager">
+                                "assets/images/logo.jpg"
+                            ) ?>" alt="Medical Check Up Logo" class="w-32 h-10" loading="eager">
             </a>
             <button id="toggleMobileMenu" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 p-1 rounded" aria-expanded="false" aria-controls="mobileMenu">
                 <span class="sr-only">Open main menu</span>
@@ -118,29 +128,29 @@
             <ul class="space-y-2 p-4">
                 <li>
                     <a href="<?= base_url(
-                        "pasien/dashboard"
-                    ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
+                                    "pasien/dashboard"
+                                ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
                         <i class="fas fa-home mr-2" aria-hidden="true"></i> Beranda
                     </a>
                 </li>
                 <li>
                     <a href="<?= base_url(
-                        "pasien/appointment"
-                    ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
+                                    "pasien/appointment"
+                                ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
                         <i class="fas fa-user-plus mr-2" aria-hidden="true"></i> Buat Janji
                     </a>
                 </li>
                 <li>
                     <a href="<?= base_url(
-                        "pasien/jadwal-pemeriksaan"
-                    ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
+                                    "pasien/jadwal-pemeriksaan"
+                                ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-200 hover:text-blue-500 rounded">
                         <i class="fas fa-stethoscope mr-2" aria-hidden="true"></i> Jadwal Pemeriksaan
                     </a>
                 </li>
                 <li class="mt-4 border-t border-gray-200 pt-2">
                     <a href="<?= base_url(
-                        "auth/logout/pasien"
-                    ) ?>" class="block py-2 px-4 text-red-600 hover:bg-gray-200 hover:text-red-700 rounded">
+                                    "auth/logout/pasien"
+                                ) ?>" class="block py-2 px-4 text-red-600 hover:bg-gray-200 hover:text-red-700 rounded">
                         <i class="fas fa-sign-out-alt mr-2" aria-hidden="true"></i> Logout
                     </a>
                 </li>
@@ -168,14 +178,14 @@
                 <li>
                     <span class="text-gray-700">
                         Welcome, <?= esc(
-                            session()->get("username") ?? "Guest"
-                        ) ?>
+                                        session()->get("username") ?? "Guest"
+                                    ) ?>
                     </span>
                 </li>
                 <li>
                     <a href="<?= base_url(
-                        "auth/logout/pasien"
-                    ) ?>" class="text-red-600 hover:text-red-700 flex items-center">
+                                    "auth/logout/pasien"
+                                ) ?>" class="text-red-600 hover:text-red-700 flex items-center">
                         <i class="fas fa-sign-out-alt mr-1" aria-hidden="true"></i> Logout
                     </a>
                 </li>
@@ -193,18 +203,18 @@
             </div>
             <hr class="border-t border-gray-300">
             <a href="<?= base_url(
-                "pasien/dashboard"
-            ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-300 hover:text-blue-500 rounded transition duration-150 ease-in-out">
+                            "pasien/dashboard"
+                        ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-300 hover:text-blue-500 rounded transition duration-150 ease-in-out">
                 <i class="fas fa-home mr-2" aria-hidden="true"></i> Beranda
             </a>
             <a href="<?= base_url(
-                "pasien/appointment"
-            ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-300 hover:text-blue-500 rounded transition duration-150 ease-in-out">
+                            "pasien/appointment"
+                        ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-300 hover:text-blue-500 rounded transition duration-150 ease-in-out">
                 <i class="fas fa-user-plus mr-2" aria-hidden="true"></i> Buat Janji
             </a>
             <a href="<?= base_url(
-                "pasien/jadwal-pemeriksaan"
-            ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-300 hover:text-blue-500 rounded transition duration-150 ease-in-out">
+                            "pasien/jadwal-pemeriksaan"
+                        ) ?>" class="block py-2 px-4 text-gray-700 hover:bg-gray-300 hover:text-blue-500 rounded transition duration-150 ease-in-out">
                 <i class="fas fa-stethoscope mr-2" aria-hidden="true"></i> Jadwal Pemeriksaan
             </a>
             <hr class="border-t border-gray-300">

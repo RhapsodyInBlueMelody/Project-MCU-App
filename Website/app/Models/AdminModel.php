@@ -1,16 +1,18 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
 
 use CodeIgniter\Model;
 
 class AdminModel extends Model
 {
-    protected $table = "Admin";
-    protected $primaryKey = "admin_id";
+    protected $table = "admin";
+    protected $primaryKey = "id_admin";
     protected $allowedFields = [
         "user_id",
-        "name",
+        "nama_admin",
         "email",
-        "phone",
+        "telepon_admin",
         "role_type",
         "created_at",
         "updated_at",
@@ -24,14 +26,14 @@ class AdminModel extends Model
     public function getPendingDoctorVerifications()
     {
         return $this->db
-            ->table("Dokter d")
+            ->table("dokter d")
             ->select("d.*, s.nama_spesialisasi, u.email, u.username")
             ->join(
-                "Spesialisasi s",
+                "spesialisasi s",
                 "d.id_spesialisasi = s.id_spesialisasi",
                 "left"
             )
-            ->join("Users u", "d.user_id = u.user_id", "left")
+            ->join("users u", "d.user_id = u.user_id", "left")
             ->where("d.verification_status", "pending")
             ->orderBy("d.created_at", "ASC")
             ->get()

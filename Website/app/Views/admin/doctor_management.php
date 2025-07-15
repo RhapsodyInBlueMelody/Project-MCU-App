@@ -6,13 +6,13 @@
         </div>
         <div class="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
             <a href="<?= base_url(
-                "admin/pending-doctor-verifications"
-            ) ?>" class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                            "admin/pending-doctor-verifications"
+                        ) ?>" class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                 <i class="fas fa-user-check mr-2"></i> Dokter Pending <span class="ml-1 bg-yellow-200 text-yellow-800 py-0.5 px-2 rounded-full text-xs font-bold"><?= isset(
-                    $pending_count
-                )
-                    ? $pending_count
-                    : "0" ?></span>
+                                                                                                                                                                        $pending_count
+                                                                                                                                                                    )
+                                                                                                                                                                        ? $pending_count
+                                                                                                                                                                        : "0" ?></span>
             </a>
             <button type="button" class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <i class="fas fa-download mr-2"></i> Export Data
@@ -39,8 +39,8 @@
                 <?php if (isset($specializations)): ?>
                     <?php foreach ($specializations as $spec): ?>
                         <option value="<?= $spec["id_spesialisasi"] ?>"><?= esc(
-    $spec["nama_spesialisasi"]
-) ?></option>
+                                                                            $spec["nama_spesialisasi"]
+                                                                        ) ?></option>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </select>
@@ -96,31 +96,31 @@
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900"><?= esc(
-                                            $doctor["NAMA_DOKTER"]
-                                        ) ?></div>
+                                                                                            $doctor["nama_dokter"]
+                                                                                        ) ?></div>
                                         <div class="text-sm text-gray-500"><?= esc(
-                                            $doctor["username"] ?? "N/A"
-                                        ) ?></div>
+                                                                                $doctor["username"] ?? "N/A"
+                                                                            ) ?></div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900"><?= esc(
-                                    $doctor["nama_spesialisasi"]
-                                ) ?></div>
+                                                                        $doctor["nama_spesialisasi"]
+                                                                    ) ?></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900"><?= esc(
-                                    $doctor["NO_LISENSI"]
-                                ) ?></div>
+                                                                        $doctor["no_lisensi"]
+                                                                    ) ?></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900"><?= esc(
-                                    $doctor["email"] ?? "N/A"
-                                ) ?></div>
+                                                                        $doctor["email"] ?? "N/A"
+                                                                    ) ?></div>
                                 <div class="text-sm text-gray-500"><?= esc(
-                                    $doctor["NO_TELP_DOKTER"]
-                                ) ?></div>
+                                                                        $doctor["telepon_dokter"]
+                                                                    ) ?></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <?php
@@ -156,24 +156,22 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="<?= base_url(
-                                    "admin/doctor-details/" .
-                                        $doctor["ID_DOKTER"]
-                                ) ?>" class="text-indigo-600 hover:text-indigo-900 mr-3">Detail</a>
+                                                "admin/doctor-details/" .
+                                                    $doctor["id_dokter"]
+                                            ) ?>" class="text-indigo-600 hover:text-indigo-900 mr-3">Detail</a>
 
                                 <?php if (
                                     $doctor["verification_status"] == "pending"
                                 ): ?>
                                     <a href="<?= base_url(
-                                        "admin/verify-doctor/" .
-                                            $doctor["ID_DOKTER"]
-                                    ) ?>" class="text-yellow-600 hover:text-yellow-900 mr-3">Verifikasi</a>
+                                                    "admin/verify-doctor/" .
+                                                        $doctor["id_dokter"]
+                                                ) ?>" class="text-yellow-600 hover:text-yellow-900 mr-3">Verifikasi</a>
                                 <?php endif; ?>
 
-                                <button type="button" class="text-red-600 hover:text-red-900" onclick="confirmDelete(<?= $doctor[
-                                    "ID_DOKTER"
-                                ] ?>, '<?= esc(
-    $doctor["NAMA_DOKTER"]
-) ?>')">Hapus</button>
+                                <button type="button" class="text-red-600 hover:text-red-900" onclick="confirmDelete(<?= $doctor["id_dokter"] ?>, '<?= esc(
+                                                                                                                                                        $doctor["nama_dokter"]
+                                                                                                                                                    ) ?>')">Hapus</button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -209,8 +207,8 @@
                     <div>
                         <p class="text-sm text-gray-700">
                             Showing <span class="font-medium"><?= $pager->getFirstIndex() +
-                                1 ?></span> to <span class="font-medium"><?= $pager->getLastIndex() +
-    1 ?></span> of <span class="font-medium"><?= $pager->getTotal() ?></span> results
+                                                                    1 ?></span> to <span class="font-medium"><?= $pager->getLastIndex() +
+                                                                                                                    1 ?></span> of <span class="font-medium"><?= $pager->getTotal() ?></span> results
                         </p>
                     </div>
                     <div>
@@ -228,11 +226,9 @@
                             <?php endif; ?>
 
                             <?php foreach ($pager->links() as $link): ?>
-                                <a href="<?= $link["uri"] ?>" class="<?= $link[
-    "active"
-]
-    ? "bg-indigo-50 border-indigo-500 text-indigo-600"
-    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" ?> relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                <a href="<?= $link["uri"] ?>" class="<?= $link["active"]
+                                                                            ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                                                                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" ?> relative inline-flex items-center px-4 py-2 border text-sm font-medium">
                                     <?= $link["title"] ?>
                                 </a>
                             <?php endforeach; ?>

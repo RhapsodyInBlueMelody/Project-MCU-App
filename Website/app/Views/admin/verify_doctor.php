@@ -3,8 +3,8 @@
         <div class="flex justify-between items-center">
             <h3 class="text-xl font-bold text-gray-900 mb-2">Verifikasi Dokter</h3>
             <a href="<?= base_url(
-                "admin/pending-doctor-verifications"
-            ) ?>" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            "admin/pending-doctor-verifications"
+                        ) ?>" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <i class="fas fa-arrow-left mr-2"></i> Kembali
             </a>
         </div>
@@ -18,62 +18,59 @@
             <div>
                 <p class="text-sm text-gray-500 mb-1">Nama Lengkap</p>
                 <p class="text-base font-medium"><?= esc(
-                    $doctor["NAMA_DOKTER"]
-                ) ?></p>
+                                                        $doctor["nama_dokter"]
+                                                    ) ?></p>
             </div>
 
             <div>
                 <p class="text-sm text-gray-500 mb-1">Username</p>
                 <p class="text-base font-medium"><?= esc(
-                    $doctor["username"]
-                ) ?></p>
-            </div>
-
-            <div>
+                                                        $doctor["username"]
+                                                    ) ?></p>
+                </disegment
+                    <div>
                 <p class="text-sm text-gray-500 mb-1">Email</p>
                 <p class="text-base font-medium"><?= esc(
-                    $doctor["email"]
-                ) ?></p>
+                                                        $doctor["email"]
+                                                    ) ?></p>
             </div>
 
             <div>
                 <p class="text-sm text-gray-500 mb-1">No. Telepon</p>
                 <p class="text-base font-medium"><?= esc(
-                    $doctor["NO_TELP_DOKTER"]
-                ) ?></p>
+                                                        $doctor["telepon_dokter"]
+                                                    ) ?></p>
             </div>
 
             <div>
                 <p class="text-sm text-gray-500 mb-1">Spesialisasi</p>
                 <p class="text-base font-medium"><?= esc(
-                    $doctor["nama_spesialisasi"]
-                ) ?></p>
+                                                        $doctor["nama_spesialisasi"]
+                                                    ) ?></p>
             </div>
 
             <div>
                 <p class="text-sm text-gray-500 mb-1">No. Lisensi</p>
                 <p class="text-base font-medium"><?= esc(
-                    $doctor["NO_LISENSI"]
-                ) ?></p>
+                                                        $doctor["no_lisensi"]
+                                                    ) ?></p>
             </div>
 
             <div>
                 <p class="text-sm text-gray-500 mb-1">Tanggal Pendaftaran</p>
                 <p class="text-base font-medium"><?= date(
-                    "d M Y, H:i",
-                    strtotime($doctor["created_at"])
-                ) ?></p>
+                                                        "d M Y, H:i",
+                                                        strtotime($doctor["created_at"])
+                                                    ) ?></p>
             </div>
         </div>
     </div>
 
     <form action="<?= base_url(
-        "admin/process-doctor-verification"
-    ) ?>" method="post">
+                        "admin/process-dokter-verification"
+                    ) ?>" method="post">
         <?= csrf_field() ?>
-        <input type="hidden" name="doctor_id" value="<?= $doctor[
-            "ID_DOKTER"
-        ] ?>">
+        <input type="hidden" name="doctor_id" value="<?= $doctor["id_dokter"] ?>">
 
         <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-2">Keputusan Verifikasi</label>

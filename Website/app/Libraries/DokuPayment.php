@@ -2,17 +2,22 @@
 
 namespace App\Libraries;
 
+use CodeIgniter\Config\Services;
+use CodeIgniter\Log\Logger; // Import Logger
+
 class DokuPayment
 {
     private $client_id;
     private $secret_key;
     private $base_url;
+    protected $logger; // Declare logger property
 
     public function __construct()
     {
         $this->client_id  = getenv('DOKU_CLIENT_ID');
         $this->secret_key = getenv('DOKU_SECRET_KEY');
         $this->base_url   = "https://api-sandbox.doku.com";
+        $this->logger = Services::logger(); // Initialize logger
     }
 
     public function createPayment($order_data)
@@ -44,10 +49,9 @@ class DokuPayment
             'Content-Type' => 'application/json'
         ];
 
-        // LOG for debugging
-        log_message('debug', 'DOKU Request Headers: ' . json_encode($headers));
-        log_message('debug', 'DOKU Request Body: ' . json_encode($request_body, JSON_UNESCAPED_SLASHES));
-        log_message('debug', 'Server UTC now: ' . gmdate('Y-m-d\TH:i:s\Z'));
+        $this->logger->debug('DOKU Create Payment Request Headers: ' . json_encode($headers));
+        $this->logger->debug('DOKU Create Payment Request Body: ' . json_encode($request_body, JSON_UNESCAPED_SLASHES));
+        $this->logger->debug('Server UTC now: ' . gmdate('Y-m-d\TH:i:s\Z'));
 
         $client = \Config\Services::curlrequest();
 
@@ -60,8 +64,7 @@ class DokuPayment
                 ]
             );
         } catch (\Throwable $e) {
-            // Network error or something unexpected (not HTTP 400/500)
-            log_message('error', 'DOKU Payment Exception: ' . $e->getMessage());
+            $this->logger->error('DOKU Create Payment Exception: ' . $e->getMessage());
             return [
                 'error' => true,
                 'message' => $e->getMessage()
@@ -74,8 +77,7 @@ class DokuPayment
         if ($status >= 200 && $status < 300) {
             return json_decode($body, true);
         } else {
-            log_message('error', 'DOKU Payment Error: HTTP ' . $status);
-            log_message('error', 'DOKU Response Body: ' . $body);
+            $this->logger->error('DOKU Create Payment Error: HTTP ' . $status . ' Body: ' . $body);
             return [
                 'error' => true,
                 'message' => 'HTTP ' . $status,

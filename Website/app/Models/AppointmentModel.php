@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use RuntimeException;
 
 class AppointmentModel extends Model
 {
@@ -17,6 +18,8 @@ class AppointmentModel extends Model
         "id_dokter",
         "id_paket",
         "status",
+        "rejection_reason",
+        "doctor_notes",
         "created_by",
         "created_at",
         "updated_by",
@@ -41,6 +44,127 @@ class AppointmentModel extends Model
             ->get()
             ->getResultArray();
     }
+
+    // Add these methods to your AppointmentModel class
+
+    public function getAppointmentWithDetails($limit = null, $offset = null)
+    {
+        $builder = $this->select('
+            janji_temu.id_janji_temu as ID_JANJI_TEMU,
+            janji_temu.nama_janji as NAMA_JANJI,
+            janji_temu.tanggal_janji as TANGGAL_JANJI,
+            janji_temu.waktu_janji as WAKTU_JANJI,
+            janji_temu.status as STATUS,
+            janji_temu.rejection_reason,
+            janji_temu.doctor_notes,
+            pasien.nama_pasien as patient_name,
+            pasien.telepon as patient_phone,
+            dokter.nama_dokter as NAMA_DOKTER,
+            spesialisasi.nama_spesialisasi as nama_spesialisasi,
+            paket.nama_paket as nama_paket
+        ')
+            ->join('pasien', 'pasien.id_pasien = janji_temu.id_pasien', 'left')
+            ->join('dokter', 'dokter.id_dokter = janji_temu.id_dokter', 'left')
+            ->join('spesialisasi', 'spesialisasi.id_spesialisasi = dokter.id_spesialisasi', 'left')
+            ->join('paket', 'paket.id_paket = janji_temu.id_paket', 'left')
+            ->orderBy('janji_temu.created_at', 'DESC');
+
+        if ($limit) {
+            $builder->limit($limit, $offset);
+        }
+
+        return $builder->findAll();
+    }
+
+    public function getAppointmentWithDetailsPaginated($perPage = 10)
+    {
+        return $this->select('
+            janji_temu.id_janji_temu as ID_JANJI_TEMU,
+            janji_temu.nama_janji as NAMA_JANJI,
+            janji_temu.tanggal_janji as TANGGAL_JANJI,
+            janji_temu.waktu_janji as WAKTU_JANJI,
+            janji_temu.status as STATUS,
+            janji_temu.rejection_reason,
+            janji_temu.doctor_notes,
+            pasien.nama_pasien as patient_name,
+            pasien.telepon as patient_phone,
+            dokter.nama_dokter as NAMA_DOKTER,
+            spesialisasi.nama_spesialisasi as nama_spesialisasi,
+            paket.nama_paket as nama_paket
+        ')
+            ->join('pasien', 'pasien.id_pasien = janji_temu.id_pasien', 'left')
+            ->join('dokter', 'dokter.id_dokter = janji_temu.id_dokter', 'left')
+            ->join('spesialisasi', 'spesialisasi.id_spesialisasi = dokter.id_spesialisasi', 'left')
+            ->join('paket', 'paket.id_paket = janji_temu.id_paket', 'left')
+            ->orderBy('janji_temu.created_at', 'DESC')
+            ->paginate($perPage);
+    }
+
+    public function getAppointmentStats()
+    {
+        return [
+            'total' => $this->countAllResults(),
+            'pending' => $this->where('status', 'pending')->countAllResults(),
+            'confirmed' => $this->where('status', 'confirmed')->countAllResults(),
+            'completed' => $this->where('status', 'completed')->countAllResults(),
+            'cancelled' => $this->where('status', 'cancelled')->countAllResults()
+        ];
+    }
+
+    public function getAppointmentDetailsById($appointmentId)
+    {
+        return $this->select('
+            janji_temu.*,
+            pasien.nama_pasien as patient_name,
+            pasien.telepon as patient_phone,
+            pasien.alamat as patient_address,
+            pasien.tanggal_lahir as patient_birthdate,
+            dokter.nama_dokter as doctor_name,
+            spesialisasi.nama_spesialisasi as specialization_name,
+            paket.nama_paket as package_name,
+            paket.harga as package_price,
+            paket.deskripsi as package_description
+        ')
+            ->join('pasien', 'pasien.id_pasien = janji_temu.id_pasien', 'left')
+            ->join('dokter', 'dokter.id_dokter = janji_temu.id_dokter', 'left')
+            ->join('spesialisasi', 'spesialisasi.id_spesialisasi = dokter.id_spesialisasi', 'left')
+            ->join('paket', 'paket.id_paket = janji_temu.id_paket', 'left')
+            ->where('janji_temu.id_janji_temu', $appointmentId)
+            ->first();
+    }
+
+    public function getMonthlyAppointmentStats()
+    {
+        return $this->select('
+            MONTH(tanggal_janji) as month,
+            YEAR(tanggal_janji) as year,
+            COUNT(*) as total_appointments,
+            SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed,
+            SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled
+        ')
+            ->where('tanggal_janji >=', date('Y-01-01'))
+            ->groupBy('YEAR(tanggal_janji), MONTH(tanggal_janji)')
+            ->orderBy('year, month')
+            ->findAll();
+    }
+
+    public function getRecentAppointments($limit = 5)
+    {
+        return $this->select('
+            janji_temu.id_janji_temu,
+            janji_temu.nama_janji as NAMA_JANJI,
+            janji_temu.tanggal_janji as TANGGAL_JANJI,
+            janji_temu.waktu_janji as WAKTU_JANJI,
+            janji_temu.status,
+            pasien.nama_pasien as patient_name
+        ')
+            ->join('pasien', 'pasien.id_pasien = janji_temu.id_pasien', 'left')
+            ->orderBy('janji_temu.created_at', 'DESC')
+            ->limit($limit)
+            ->findAll();
+    }
+
+
 
     // Get upcoming appointments for a specific patient with a limit
     public function getUpcomingAppointments($patientId, $limit = null)
@@ -154,12 +278,20 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
-    // Get appointments for a specific doctor by status
+    // Get appointments for a specific doctor by status, with info if any lab test is completed
     public function getDoctorAppointmentsByStatus($doctorId, $status)
     {
         return $this->db
             ->table("janji_temu a")
-            ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
+            ->select("a.*, 
+                  p.nama_pasien as patient_name, 
+                  p.telepon as patient_phone, 
+                  pa.nama_paket,
+                  EXISTS(
+                    SELECT 1 FROM test_lab lo
+                    WHERE lo.id_janji_temu = a.id_janji_temu AND lo.status = 'completed'
+                  ) as has_completed_lab
+        ")
             ->join("pasien p", "p.id_pasien = a.id_pasien", "left")
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->where("a.id_dokter", $doctorId)
@@ -185,9 +317,13 @@ class AppointmentModel extends Model
             ->getResultArray();
     }
 
-    // Get patients waiting for diagnosis (no diagnosis record)
-    public function getPatientsWaitingFordiagnosis($doctorId)
+    public function getPatientsWaitingForDiagnosis($doctorId)
     {
+        // Subquery: Find appointments where at least 1 test is not completed (but not cancelled/rejected)
+        $subQuery = $this->db->table('test_lab')
+            ->select('id_janji_temu')
+            ->whereIn('status', ['ordered', 'in progress']); // Only pending/active tests
+
         return $this->db
             ->table("janji_temu a")
             ->select("a.*, p.nama_pasien as patient_name, p.telepon as patient_phone, pa.nama_paket")
@@ -195,8 +331,11 @@ class AppointmentModel extends Model
             ->join("paket pa", "pa.id_paket = a.id_paket", "left")
             ->join("diagnosis d", "d.id_janji_temu = a.id_janji_temu", "left")
             ->where("a.id_dokter", $doctorId)
-            ->where("a.status", "confirmed")
+            ->whereNotIn('a.status', ['cancelled', 'rejected']) // Exclude cancelled/rejected appointments
+            ->groupStart()
             ->where("d.id_diagnosis IS NULL")
+            ->orWhereIn("a.id_janji_temu", $subQuery)
+            ->groupEnd()
             ->get()
             ->getResultArray();
     }
@@ -219,114 +358,23 @@ class AppointmentModel extends Model
     }
 
     // Create a new appointment
-    public function createAppointment($data, $request)
+    public function createAppointment(array $data): string
     {
-        $validation = \Config\Services::validation();
-        $validation->setRules(
-            [
-                "nama_janji"      => "required|min_length[3]|max_length[255]|string",
-                "tanggal_janji"   => "required|valid_date",
-                "waktu_janji"     => "required|regex_match[/(0[89]|1[0-7]):[0-5][0-9]/]",
-                "paket_terpilih"  => "required|numeric|is_natural_no_zero",
-                "id_dokter"       => "required|min_length[1]|max_length[30]|alpha_numeric_punct",
-            ],
-            [
-                "nama_janji" => [
-                    "required" => "Nama janji harus diisi.",
-                    "min_length" => "Nama janji minimal 3 karakter.",
-                    "max_length" => "Nama janji maksimal 255 karakter.",
-                ],
-                "tanggal_janji" => [
-                    "required" => "Tanggal janji harus diisi.",
-                    "valid_date" => "Format tanggal tidak valid.",
-                ],
-                "waktu_janji" => [
-                    "required" => "Waktu janji harus diisi.",
-                    "regex_match" => "Waktu janji harus antara jam 08:00 - 17:00.",
-                ],
-                "paket_terpilih" => [
-                    "required" => "Paket harus dipilih.",
-                    "numeric" => "Paket tidak valid.",
-                    "is_natural_no_zero" => "Paket tidak valid.",
-                ],
-                "id_dokter" => [
-                    "required" => "Dokter harus dipilih.",
-                    "min_length" => "ID dokter tidak boleh kosong.",
-                    "max_length" => "ID dokter terlalu panjang.",
-                    "alpha_numeric_punct" => "ID dokter mengandung karakter tidak valid.",
-                ],
-            ]
-        );
+        $this->db->transStart();
 
-        if (!$validation->withRequest($request)->run()) {
-            return [
-                'success' => false,
-                'errors' => $validation->getErrors(),
-            ];
+        $insertResult = $this->insert($data);
+        if ($insertResult === false || $this->db->transStatus() === false) {
+            $this->db->transRollback();
+            $dbError = $this->db->error();
+            throw new RuntimeException(
+                'Gagal membuat janji temu. Database error: ' .
+                    ($dbError['message'] ?? 'Unknown database error.') .
+                    ' (Code: ' . ($dbError['code'] ?? 'N/A') . ')'
+            );
         }
 
-        $namaJanji = htmlspecialchars($request->getPost("nama_janji"), ENT_QUOTES, "UTF-8");
-        $tanggalJanji = $request->getPost("tanggal_janji");
-        $waktuJanji = $request->getPost("waktu_janji");
-        $dokterId = $request->getPost("id_dokter");
-        $paketId = (int) $request->getPost("paket_terpilih");
-        $pasienId = $data['id_pasien'] ?? null;
-        $userId = $data['user_id'] ?? $pasienId;
-
-        if (!$pasienId) {
-            return [
-                'success' => false,
-                'errors' => ['id_pasien' => 'ID pasien tidak ditemukan.'],
-            ];
-        }
-
-        $insertData = [
-            "nama_janji" => $namaJanji,
-            "id_pasien" => $pasienId,
-            "tanggal_janji" => $tanggalJanji,
-            "waktu_janji" => $waktuJanji,
-            "id_dokter" => $dokterId,
-            "id_paket" => $paketId,
-            "status" => "pending",
-            "created_by" => $userId,
-            "updated_by" => $userId,
-        ];
-
-        // Doctor availability check
-        if (!$this->isDoctorAvailable($dokterId, $tanggalJanji, $waktuJanji)) {
-            return [
-                'success' => false,
-                'errors' => ['id_dokter' => "Dokter tidak tersedia pada waktu tersebut. Silakan pilih waktu lain."],
-            ];
-        }
-
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        try {
-            $db->query("CALL mcu_app.GenerateIdJanjiTemu(@newId)");
-            $row = $db->query("SELECT @newId AS id_janji_temu")->getRowArray();
-            $id_janji_temu = $row['id_janji_temu'];
-            $insertData['id_janji_temu'] = $id_janji_temu;
-
-            $this->insert($insertData);
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                throw new \Exception("Database transaction failed.");
-            }
-
-            return [
-                'success' => true,
-                'id_janji_temu' => $id_janji_temu,
-            ];
-        } catch (\Exception $e) {
-            $db->transRollback();
-            return [
-                'success' => false,
-                'errors' => ['system' => $e->getMessage()],
-            ];
-        }
+        $this->db->transComplete();
+        return $data['id_janji_temu'];
     }
 
     // Check if a doctor is available at a specific date and time
@@ -403,5 +451,36 @@ class AppointmentModel extends Model
             ->where('a.id_pasien', $pasienId)
             ->get()
             ->getResultArray();
+    }
+
+    public function markAwaitingLabResults($appointmentId, $userId)
+    {
+        return $this->update($appointmentId, [
+            "status" => "awaiting_lab_results",
+            "updated_by" => $userId,
+        ]);
+    }
+
+    public function markCompleted($appointmentId, $userId)
+    {
+        return $this->update($appointmentId, [
+            "status" => "completed",
+            "updated_by" => $userId,
+        ]);
+    }
+
+    public function generateAppointmentId(): string
+    {
+        $db = \Config\Database::connect();
+        $db->query("CALL GenerateIdJanjiTemu(@newId)");
+        $result = $db->query("SELECT @newId AS id")->getRow();
+
+        if (!$result || !$result->id) {
+            log_message('error', 'Stored procedure failed! Returned: ' . print_r($result, true));
+            throw new \RuntimeException('ID generation failed: Stored procedure returned no value');
+        }
+
+        log_message('debug', 'Generated Appointment ID: ' . $result->id);
+        return $result->id;
     }
 }

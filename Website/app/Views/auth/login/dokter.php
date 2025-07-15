@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
-<body class="bg-gray-500">
+<body class="bg-gray-300">
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
             <div class="bg-blue-600 py-4">
@@ -87,7 +87,7 @@
                     <p class="text-sm text-gray-600">
                         Belum memiliki akun?
                         <a href="<?= base_url(
-                                        "auth/register/doctor"
+                                        "auth/register/social/dokter"
                                     ) ?>" class="text-blue-600 hover:text-blue-800 font-medium">
                             Daftar di sini
                         </a>

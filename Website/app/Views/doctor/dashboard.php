@@ -122,7 +122,7 @@
         </div>
         <div class="bg-gray-50 px-4 py-3">
             <div class="text-sm">
-                <a href="#lab-results-section" class="font-medium text-green-600 hover:text-green-500">Lihat semua</a>
+                <a href="<?= base_url("dokter/appointments?status=awaiting_lab_results") ?>" class="font-medium text-green-600 hover:text-green-500">Lihat semua</a>
             </div>
         </div>
     </div>

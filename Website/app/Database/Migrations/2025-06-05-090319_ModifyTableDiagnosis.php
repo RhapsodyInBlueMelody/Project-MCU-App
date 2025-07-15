@@ -54,16 +54,6 @@ class ModifyDiagnosisTable extends Migration
                 ]
             ]);
         }
-        if (!in_array('nama_petugas_lab', $fields)) {
-            $this->forge->addColumn('diagnosis', [
-                'nama_petugas_lab' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => '100',
-                    'null' => true,
-                    'after' => 'id_petugas_lab'
-                ]
-            ]);
-        }
         $this->forge->modifyColumn('petugas_lab', [
             'id_petugas_lab' => ['type' => 'VARCHAR', 'constraint' => 30, 'null' => false],
         ]);

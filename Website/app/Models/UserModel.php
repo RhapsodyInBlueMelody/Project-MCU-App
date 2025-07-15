@@ -85,6 +85,24 @@ class UserModel extends Model
         return $user;
     }
 
+    public function authenticateLab($login, $password)
+    {
+        $user = $this->where("role", "petugas_lab")
+            ->where("status", "active")
+            ->groupStart()
+            ->where("email", $login)
+            ->orWhere("username", $login)
+            ->groupEnd()
+            ->first();
+
+
+        if (!$user || !password_verify($password, $user['password'])) {
+            return null;
+        }
+
+        return $user;
+    }
+
     /**
      * Generate a new user ID using stored procedure
      */

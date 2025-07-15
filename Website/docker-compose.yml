@@ -9,7 +9,7 @@ services:
       - db
 
   db:
-    image: mysql:8.0
+    image: mariadb:11.4.7 # Exact same version as production!
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: mcu_app
@@ -19,13 +19,15 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci # Force UTF-8 from the start!
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     environment:
       PMA_HOST: db
-      PMA_USER: root
-      PMA_PASSWORD: rootpassword
+      PMA_USER: ciuser
+      PMA_PASSWORD: supersecretpassword
     ports:
       - "8081:80"
     depends_on:
